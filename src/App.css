@@ -1,0 +1,58 @@
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+
+.WT-text-field .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: #00000036;
+  transition: ease 0.2s;
+}
+
+.WT-text-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #000000aa;
+  
+}
+
+.WT-text-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #000;
+  border-width: 1px;
+}
+
+
+.bg-red {
+  background-color: red;
+}
+
+.bg-green {
+  background-color: green;
+}
+
+.bg-blue {
+  background-color: blue;
+}
+
+.max-site-width {
+  max-width: 2560px !important;
+}
+
+.margin-auto {
+  margin: auto;
+}
+
