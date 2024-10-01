@@ -19,6 +19,9 @@
   align-items: center;
 }
 
+.text-center {
+  text-align: center;
+}
 
 .WT-text-field .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
   border-color: #00000036;
@@ -35,17 +38,8 @@
   border-width: 1px;
 }
 
-
-.bg-red {
-  background-color: red;
-}
-
-.bg-green {
-  background-color: green;
-}
-
-.bg-blue {
-  background-color: blue;
+.bg-secondary {
+  background-color: #2D8E00;
 }
 
 .max-site-width {
@@ -56,3 +50,8 @@
   margin: auto;
 }
 
+
+.mr-4 {
+  margin-right: 16px;
+}
+ 

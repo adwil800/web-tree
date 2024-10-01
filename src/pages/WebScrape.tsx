@@ -1,10 +1,11 @@
 import {Box, Button, TextField} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
-import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
-import { TreeItem } from '@mui/x-tree-view/TreeItem';
+import WTTable from "../components/WTTable";
+import WTTreeView from "../components/WTTreeView";
 
 interface ScrapedData {
+    itemId: string;
     tag: string;
     content?: ScrapedData[] | string;
     attributes?: { [key: string]: string };
@@ -12,13 +13,16 @@ interface ScrapedData {
 
 const sampleScrapedData: ScrapedData[] = 
 [
-    {
+    { 
+      "itemId": "0",
       "tag": "html",
       "content": [
         {
+          "itemId": "1",
           "tag": "head",
           "content": [
             {
+              "itemId": "2",
               "tag": "meta",
               "attributes": {
                 "name": "viewport",
@@ -26,6 +30,7 @@ const sampleScrapedData: ScrapedData[] =
               }
             },
             {
+              "itemId": "3",
               "tag": "meta",
               "attributes": {
                 "name": "Web tree",
@@ -33,38 +38,70 @@ const sampleScrapedData: ScrapedData[] =
               }
             },
             {
+              "itemId": "4",
               "tag": "title",
               "content": "Web Tree"
             }
           ]
         },
         {
+          "itemId": "5",
           "tag": "body",
           "content": [
             {
-              "tag": "section",
+          "itemId": "6",
+          "tag": "section",
               "content": [
                 {
+                  "itemId": "7",
                   "tag": "ul",
                   "attributes": {
                     "class": "products"
                   },
                   "content": [
                     {
+                      "itemId": "8",
                       "tag": "li",
                       "attributes": {
                         "Class": "product"
                       },
                       "content": [
                         {
-                          "tag": "p",
+                        "itemId": "9",
+                        "tag": "p",
                           "attributes": {
                             "class": "product-name"
                           },
                           "content": "Laptop"
                         },
                         {
-                          "tag": "p",
+                        "itemId": "10",
+                        "tag": "p",
+                          "attributes": {
+                            "class": "product-price"
+                          },
+                          "content": "$200"
+                        }
+                      ]
+                    },
+                    {
+                        "itemId": "11",
+                      "tag": "li",
+                      "attributes": {
+                        "Class": "product"
+                      },
+                      "content": [
+                        {
+                        "itemId": "12",
+                        "tag": "p",
+                          "attributes": {
+                            "class": "product-name"
+                          },
+                          "content": "Laptop"
+                        },
+                        {
+                        "itemId": "13",
+                        "tag": "p",
                           "attributes": {
                             "class": "product-price"
                           },
@@ -80,54 +117,120 @@ const sampleScrapedData: ScrapedData[] =
         }
       ]
     }
-]
+];
+
+const sampleSelectedData: ScrapedData =  { 
+  "itemId": "0",
+  "tag": "html",
+  "content": [
+    {
+      "itemId": "1",
+      "tag": "head",
+      "content": [
+        {
+          "itemId": "2",
+          "tag": "meta",
+          "attributes": {
+            "name": "viewport",
+            "content": "width=device-width, initial-scale=1"
+          }
+        },
+        {
+          "itemId": "3",
+          "tag": "meta",
+          "attributes": {
+            "name": "Web tree",
+            "content": "A simple web scraper"
+          }
+        },
+        {
+          "itemId": "4",
+          "tag": "title",
+          "content": "Web Tree"
+        }
+      ]
+    },
+    {
+      "itemId": "5",
+      "tag": "body",
+      "content": [
+        {
+      "itemId": "6",
+      "tag": "section",
+          "content": [
+            {
+              "itemId": "7",
+              "tag": "ul",
+              "attributes": {
+                "class": "products"
+              },
+              "content": [
+                {
+                  "itemId": "8",
+                  "tag": "li",
+                  "attributes": {
+                    "Class": "product"
+                  },
+                  "content": [
+                    {
+                    "itemId": "9",
+                    "tag": "p",
+                      "attributes": {
+                        "class": "product-name"
+                      },
+                      "content": "Laptop"
+                    },
+                    {
+                    "itemId": "10",
+                    "tag": "p",
+                      "attributes": {
+                        "class": "product-price"
+                      },
+                      "content": "$200"
+                    }
+                  ]
+                },
+                {
+                    "itemId": "11",
+                  "tag": "li",
+                  "attributes": {
+                    "Class": "product"
+                  },
+                  "content": [
+                    {
+                    "itemId": "12",
+                    "tag": "p",
+                      "attributes": {
+                        "class": "product-name"
+                      },
+                      "content": "Laptop"
+                    },
+                    {
+                    "itemId": "13",
+                    "tag": "p",
+                      "attributes": {
+                        "class": "product-price"
+                      },
+                      "content": "$200"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
   
 
 export default function WebScrape () {
 
-
-    const extractAttributes = ({attributes}: ScrapedData) => {
-
-          //Filter by attr by using #, ., or tag
-          const attrs = attributes ? Object.keys(attributes).map((key) => {
-
-            //Replace key with their respective selector
-            const includesKey = ['class', 'id'].includes(key.toLowerCase());
-            const selector = includesKey ? key.replace(/class/gi, '.').replace('id', '#') : key + '="';
-
-            return `${(!includesKey && ' ') || ''}${selector}${ attributes && attributes[key]}${(!includesKey && '"') || ''}`;
-            
-        }) : [];
-
-        return attrs
-
-    }
-
-    const renderScrapedJson = (data: ScrapedData[]) => {
-        return data.map((item, index) => {
-
-            const itemId = item.tag + '-' + index;
-            const attributes = extractAttributes(item);
-
-            //Filter by textContent
-            if (typeof item.content === 'string') {
-                return (
-                    <TreeItem key={index} itemId={itemId} label={item.tag + attributes.join('')}>
-                        <TreeItem itemId={itemId + index} label={item.content} />
-                    </TreeItem>
-                );
-            }
-
-            return (
-                <TreeItem key={index} itemId={itemId} label={item.tag + attributes.join('')}>
-                    { item.content && renderScrapedJson(item.content) }
-                </TreeItem>
-            );
-        }
-        );
-    }
-
-    IM HERE RENDERING THE TREEVIEW
+  const handleTreeClick = (item: ScrapedData) => {
+    console.log('Tree clicked: ', item);
+  }
 
     return (
         <Box>
@@ -156,7 +259,7 @@ export default function WebScrape () {
                     
                 </Grid>
 
-                <Grid sx={{ pl: 10 }} size={{ xs: 6 }}>
+                <Grid size={{ xs: 4 }}>
 
                     <TextField
                         label="Website URL"
@@ -169,17 +272,30 @@ export default function WebScrape () {
 
                     </TextField>
 
-                    <Box className="tree-container bg-green " color={'white'} p={3} borderRadius={2} mt={1} maxHeight={700} overflow={'auto'}>
+                    <Box className="tree-container bg-secondary " color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'71vh'} overflow={'auto'}>
                         
-                        <SimpleTreeView >
-                            { renderScrapedJson(sampleScrapedData) }
-                        </SimpleTreeView>
+                        <WTTreeView scrapedData={sampleScrapedData} onClick={handleTreeClick}/>
                                 
                     </Box>
                     
                 </Grid>
 
-                <Grid sx={{ display: "flex", justifyContent: "center", mt: 10}} size={{ xs: 5 }}  >
+                <Grid container spacing={2}  sx={{ display: "flex",  justifyContent: "end",}} size={{ xs: 7 }}  >
+
+                  <Grid size={12} maxHeight={'70vh'} overflow={'auto'}>
+                    <WTTable selectedData={sampleSelectedData}/>
+                  </Grid>
+
+                  <Grid size={1}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      sx={{ ml: '10px' }}
+                    >
+                        <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
+                    </Button>
+                  </Grid>
+
                 </Grid>
 
             </Grid>
