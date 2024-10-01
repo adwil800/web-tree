@@ -22,25 +22,7 @@
 .text-center {
   text-align: center;
 }
-
-.WT-text-field .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-  border-color: #00000036;
-  transition: ease 0.2s;
-}
-
-.WT-text-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: #000000aa;
-  
-}
-
-.WT-text-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #000;
-  border-width: 1px;
-}
-
-.bg-secondary {
-  background-color: #2D8E00;
-}
+ 
 
 .max-site-width {
   max-width: 2560px !important;
@@ -54,12 +36,8 @@
 .mr-4 {
   margin-right: 16px;
 }
- 
-.clickable-tablecell {
-  cursor: pointer;
-  transition: ease 0.2s;
-}
 
-.clickable-tablecell:hover {
-  background-color: #f0f0f0;
+.z-10 {
+  z-index: 10;
 }
+ 

@@ -1,6 +1,7 @@
-import {Box, Button, TextField, Typography} from "@mui/material";
+import {Box, Button, Typography} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
+import WTTextField from "../components/WTTextField";
 
 const htmlText = `
     <html> 
@@ -43,15 +44,16 @@ export default function WebSearch () {
                     </Typography>
 
                     <Box className="flex">
-                        <TextField
-                            label="Website URL"
-                            variant="outlined"
-                            autoComplete="off"
-                            className="WT-text-field"
-                            fullWidth
-                        >
 
-                        </TextField>
+                    <WTTextField
+                        label="Website URL"
+                        variant="outlined"
+                        autoComplete="off"
+                        className="WT-text-field"
+                        fullWidth
+                    />
+
+                      
                         <Button
                             variant="contained"
                             color="secondary"

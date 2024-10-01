@@ -22,7 +22,6 @@ const extractAllIds = (data: ScrapedData[]) => {
 }
 
  
-
 export default function WTTreeView ({scrapedData, onClick}: WebScrapeProps) {
 
     const [expandedItems, setExpandedItems] =  useState<string[]>(extractAllIds(scrapedData));

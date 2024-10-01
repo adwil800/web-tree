@@ -6,20 +6,43 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import CodeOffIcon from '@mui/icons-material/CodeOff';
 import {ScrapedData} from './models';
 import {extractAttributes} from './commonFunctions';
-import CodeOffIcon from '@mui/icons-material/CodeOff';
+import WTAlert from './WTAlert';
 
 interface WTTableProps {
     selectedData: ScrapedData;
     displaySelectorAttributes: boolean;
 }
 
+const headerSX = { backgroundColor: 'secondary.main', transition: 'background-color 0.2s ease' }
+
 export default function WTTable({ selectedData, displaySelectorAttributes }: WTTableProps) {
 
+    const [showAlert, setShowAlert] = React.useState(false);
+
+    const tableCellHover = {
+        transition: 'ease 0.2s',
+        '&:hover': {
+            backgroundColor: 'secondary.main',
+            cursor: 'pointer'
+        }
+    }
+
+    const cellText = {
+        '.MuiTableCell-root': {
+            color: 'common.white'
+        }
+    }
+
     const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        IM HERE TRIGGER ALERT ON COPY
+        navigator.clipboard.writeText(`document.querySelector('${text}')`);
+        setShowAlert(true);
+    }
+
+    const onCloseAlert = () => {
+        setShowAlert(false);
     }
 
     const genRows = (data: ScrapedData, selector: string, contentNth = {} as Record<string, {current: number, amount: number}>): React.ReactNode => {
@@ -52,7 +75,7 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
                 <TableRow key={data.itemId}>
                     <TableCell>{data.itemId}</TableCell>
                     <TableCell component="th" scope="row">{data.tag}</TableCell>
-                    <TableCell className="clickable-tablecell" onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                    <TableCell sx={tableCellHover} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
                     <TableCell align="right" >
                         {attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>}
                     </TableCell>
@@ -82,7 +105,7 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
                     <TableRow >
                         <TableCell>{data.itemId}</TableCell>
                         <TableCell component="th" scope="row">{data.tag}</TableCell>
-                        <TableCell className="clickable-tablecell" onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                        <TableCell sx={tableCellHover} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
                         <TableCell align="right" >
                             {attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>}
                         </TableCell>
@@ -114,7 +137,7 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
             <TableRow key={data.itemId}>
                 <TableCell>{data.itemId}</TableCell>
                 <TableCell component="th" scope="row">{data.tag}</TableCell>
-                <TableCell className="clickable-tablecell" onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                <TableCell sx={tableCellHover} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
                 <TableCell align="right" >
                     {selectorAttributes.length ? selectorAttributes.join('') : <CodeOffIcon className='mr-4'/>}
                 </TableCell>
@@ -125,25 +148,29 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
 
     }
 
+
     return (
-        <TableContainer component={Paper} >
-            <Table aria-label="WebScrape table">
+        <>
+            <TableContainer component={Paper}   sx={{ maxHeight: '70vh' }} >
+                <Table aria-label="WebScrape table" id="WTTable"  sx={{ backgroundColor: 'primary.main', ...cellText, transition: 'background-color 0.2s ease' }}  stickyHeader  >
 
-                <TableHead>
-                    <TableRow>
-                        <TableCell>ItemId</TableCell>
-                        <TableCell>Tag</TableCell>
-                        <TableCell>CSS Selector</TableCell>
-                        <TableCell align="right">Attributes</TableCell>
-                        <TableCell align="right">Content Type</TableCell>
-                        <TableCell align="right">Content</TableCell>
-                    </TableRow>
-                </TableHead>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell sx={headerSX}>ItemId</TableCell>
+                            <TableCell sx={headerSX}>Tag</TableCell>
+                            <TableCell sx={headerSX}>CSS Selector</TableCell>
+                            <TableCell sx={headerSX} align="right">Attributes</TableCell>
+                            <TableCell sx={headerSX} align="right">Content Type</TableCell>
+                            <TableCell sx={headerSX} align="right">Content</TableCell>
+                        </TableRow>
+                    </TableHead>
 
-                <TableBody> 
-                    { genRows(selectedData, '') }
-                </TableBody>
-            </Table>
-        </TableContainer>
+                    <TableBody> 
+                        { genRows(selectedData, '') }
+                    </TableBody>
+                </Table>
+            </TableContainer>
+           <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} message={'Copied to clipboard'} />
+        </>
     );
 }
