@@ -1,9 +1,11 @@
-import {Box, Button, TextField} from "@mui/material";
+import {Box, Button, TextField, Tooltip} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
 import WTTable from "../components/WTTable";
 import WTTreeView from "../components/WTTreeView";
-
+import {useState} from "react";
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 interface ScrapedData {
     itemId: string;
     tag: string;
@@ -56,6 +58,7 @@ const sampleScrapedData: ScrapedData[] =
                   "itemId": "7",
                   "tag": "ul",
                   "attributes": {
+                    "id": "ProductList",
                     "class": "products"
                   },
                   "content": [
@@ -63,7 +66,7 @@ const sampleScrapedData: ScrapedData[] =
                       "itemId": "8",
                       "tag": "li",
                       "attributes": {
-                        "Class": "product"
+                        "Class": "product listItem"
                       },
                       "content": [
                         {
@@ -88,7 +91,7 @@ const sampleScrapedData: ScrapedData[] =
                         "itemId": "11",
                       "tag": "li",
                       "attributes": {
-                        "Class": "product"
+                        "Class": "product listItem"
                       },
                       "content": [
                         {
@@ -153,15 +156,25 @@ const sampleSelectedData: ScrapedData =  {
     {
       "itemId": "5",
       "tag": "body",
+      "attributes": {
+        "className": "body1",
+        "name": "body11"
+      },
       "content": [
         {
       "itemId": "6",
       "tag": "section",
+      "attributes": {
+        "class": "section111",
+        "className": "sampleSection",
+        "id": "section1",
+      },
           "content": [
             {
               "itemId": "7",
               "tag": "ul",
               "attributes": {
+                "id": "ProductList",
                 "class": "products"
               },
               "content": [
@@ -169,7 +182,7 @@ const sampleSelectedData: ScrapedData =  {
                   "itemId": "8",
                   "tag": "li",
                   "attributes": {
-                    "Class": "product"
+                    "Class": "product listItem"
                   },
                   "content": [
                     {
@@ -194,7 +207,7 @@ const sampleSelectedData: ScrapedData =  {
                     "itemId": "11",
                   "tag": "li",
                   "attributes": {
-                    "Class": "product"
+                    "Class": "product listItem"
                   },
                   "content": [
                     {
@@ -223,7 +236,6 @@ const sampleSelectedData: ScrapedData =  {
     }
   ]
 }
-
   
 
 export default function WebScrape () {
@@ -232,75 +244,91 @@ export default function WebScrape () {
     console.log('Tree clicked: ', item);
   }
 
-    return (
-        <Box>
-            <Grid container spacing={2} size={12} justifyContent="center">
+  const [includeSelectorAttributes, setIncludeSelectorAttributes] = useState(false);
 
-                <Grid size={{ xs: 9 }} >
+  const toggleSelectorAttributes = () => {
+      setIncludeSelectorAttributes(!includeSelectorAttributes);
+  };
 
-                    <Box className="flex">
-                        <TextField
-                            label="Website URL"
-                            variant="outlined"
-                            autoComplete="off"
-                            className="WT-text-field"
-                            fullWidth
-                        >
+  return (
+      <Box>
+          <Grid container spacing={2} size={12} justifyContent="center">
 
-                        </TextField>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            sx={{ ml: '10px' }}
-                        >
-                            <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
-                        </Button>
-                    </Box>
-                    
+              <Grid size={{ xs: 9 }} >
+
+                  <Box className="flex">
+                      <TextField
+                          label="Website URL"
+                          variant="outlined"
+                          autoComplete="off"
+                          className="WT-text-field"
+                          fullWidth
+                      >
+
+                      </TextField>
+                      <Button
+                          variant="contained"
+                          color="secondary"
+                          sx={{ ml: '10px' }}
+                      >
+                          <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
+                      </Button>
+                  </Box>
+                  
+              </Grid>
+
+              <Grid size={{ xs: 4 }}>
+
+                  <TextField
+                      label="Website URL"
+                      variant="outlined"
+                      autoComplete="off"
+                      className="WT-text-field"
+                      fullWidth
+                      size="small"
+                  >
+
+                  </TextField>
+
+                  <Box className="tree-container bg-secondary " color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'71vh'} overflow={'auto'}>
+                      
+                      <WTTreeView scrapedData={sampleScrapedData} onClick={handleTreeClick}/>
+                              
+                  </Box>
+                  
+              </Grid>
+
+              <Grid container spacing={2}  sx={{ display: "flex",  justifyContent: "end",}} size={{ xs: 7 }}  >
+
+                <Grid size={12} maxHeight={'70vh'} overflow={'auto'}>
+                  <WTTable selectedData={sampleSelectedData} displaySelectorAttributes={includeSelectorAttributes}/>
                 </Grid>
 
-                <Grid size={{ xs: 4 }}>
-
-                    <TextField
-                        label="Website URL"
-                        variant="outlined"
-                        autoComplete="off"
-                        className="WT-text-field"
-                        fullWidth
-                        size="small"
-                    >
-
-                    </TextField>
-
-                    <Box className="tree-container bg-secondary " color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'71vh'} overflow={'auto'}>
-                        
-                        <WTTreeView scrapedData={sampleScrapedData} onClick={handleTreeClick}/>
-                                
-                    </Box>
-                    
-                </Grid>
-
-                <Grid container spacing={2}  sx={{ display: "flex",  justifyContent: "end",}} size={{ xs: 7 }}  >
-
-                  <Grid size={12} maxHeight={'70vh'} overflow={'auto'}>
-                    <WTTable selectedData={sampleSelectedData}/>
-                  </Grid>
-
-                  <Grid size={1}>
+                <Grid size={12} sx={{ display: "flex",  justifyContent: "end",}}>
+                  <Tooltip enterDelay={500} title="Include selector attributes">
                     <Button
                       variant="contained"
                       color="secondary"
-                      sx={{ ml: '10px' }}
-                    >
-                        <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
-                    </Button>
-                  </Grid>
+                      sx={{ ml: '10px', textTransform: 'none'  }}
+                      onClick={toggleSelectorAttributes}
+                      title="Include selector attributes"
+                    > 
+                      Selector attributes &nbsp;
+                      {includeSelectorAttributes ? 
+                          <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                        :
+                          <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                      }
 
+                    </Button>
+                  </Tooltip>
                 </Grid>
 
-            </Grid>
-        </Box>
-    );
+              </Grid>
+
+          </Grid>
+      </Box>
+  );
 
 };
 

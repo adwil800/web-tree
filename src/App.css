@@ -55,3 +55,11 @@
   margin-right: 16px;
 }
  
+.clickable-tablecell {
+  cursor: pointer;
+  transition: ease 0.2s;
+}
+
+.clickable-tablecell:hover {
+  background-color: #f0f0f0;
+}
