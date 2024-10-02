@@ -24,6 +24,7 @@ export const lightTheme = createTheme({
       secondary: '#000',
       disabled: '#000',
     },
+
   },
   
 }); 
@@ -32,7 +33,7 @@ export const darkTheme = createTheme({
   palette: {
     primary: {
       main: '#292D32', 
-      light: '#fff'
+      light: '#fff',
     },
     secondary: {
       main: '#191B1F', 
@@ -51,7 +52,6 @@ export const darkTheme = createTheme({
       secondary: '#fff',
       disabled: '#fff',
     },
-    
   },
   
 });

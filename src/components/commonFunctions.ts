@@ -1,3 +1,4 @@
+import {ScrapedData} from "./models";
 
 type TagAttributes = {
     [key: string]: string;
@@ -35,4 +36,16 @@ export const extractAttributes = (attributes: TagAttributes, replaceSelectors = 
     
   return attrs
 
+}
+
+
+
+export const extractAllIds = (data: ScrapedData[]) => {
+  return data.reduce((acc, item) => {
+      acc.push(item.itemId);
+      if (item.content && Array.isArray(item.content)) {
+          acc.push(...extractAllIds(item.content));
+      }
+      return acc;
+  }, [] as string[]);
 }

@@ -30,7 +30,7 @@ function App() {
   
   return (
 
-    <ThemeSwitcher isDarkMode={isDarkMode}>
+    <ThemeSwitcher isDarkMode={isDarkMode} >
       <MainLayout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
         <WebScrape/>
       </MainLayout>

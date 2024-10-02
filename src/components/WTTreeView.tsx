@@ -1,28 +1,22 @@
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import {ScrapedData} from "./models";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import IconButton from '@mui/material/IconButton';
-import {useState} from 'react';
-import {extractAttributes} from './commonFunctions';
+import {useEffect, useState} from 'react';
+import {extractAllIds, extractAttributes} from './commonFunctions';
+import {Box, Tooltip} from '@mui/material';
+import DeviceHubIcon from '@mui/icons-material/DeviceHub';
+import CircleIcon from '@mui/icons-material/Circle';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 interface WebScrapeProps {
     scrapedData: ScrapedData[];
-    onClick: (item: ScrapedData) => void;
+    selectedIds: Set<string>;
+    querySelectorFilter: string;
+    onClick: (itemId: string, selectionType: 'node' | 'tree') => void;
 }
-
-const extractAllIds = (data: ScrapedData[]) => {
-    return data.reduce((acc, item) => {
-        acc.push(item.itemId);
-        if (item.content && Array.isArray(item.content)) {
-            acc.push(...extractAllIds(item.content));
-        }
-        return acc;
-    }, [] as string[]);
-}
-
  
-export default function WTTreeView ({scrapedData, onClick}: WebScrapeProps) {
+export default function WTTreeView ({scrapedData, selectedIds, querySelectorFilter, onClick}: WebScrapeProps) {
 
     const [expandedItems, setExpandedItems] =  useState<string[]>(extractAllIds(scrapedData));
 
@@ -38,6 +32,33 @@ export default function WTTreeView ({scrapedData, onClick}: WebScrapeProps) {
 
     }
 
+    const selectionButtons = (itemId: string, content: string) => (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+            {content} 
+
+            <Box sx={{ display: 'flex'}}>
+                <Tooltip title="Add node" PopperProps={{placement:'left'}}>
+                    <IconButton onClick={(e) => { e.stopPropagation(); onClick(itemId, 'node'); }}>
+
+                        {selectedIds.has(itemId) ? 
+                            <CheckCircleIcon htmlColor={'white'} />
+                            :
+                            <CircleIcon htmlColor={'white'} />
+                        }
+                    </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Add tree" PopperProps={{placement:'right'}}>
+                    <IconButton onClick={(e) => { e.stopPropagation(); onClick(itemId, 'tree'); }}>
+                        <DeviceHubIcon htmlColor={'white'} sx={{ fontSize: 30 }}/>
+                    </IconButton>
+                </Tooltip>
+            </Box>
+                
+
+        </div>
+    )
 
     const renderScrapedJson = (data: ScrapedData[]) => {
         return data.map((item, index) => {
@@ -48,14 +69,7 @@ export default function WTTreeView ({scrapedData, onClick}: WebScrapeProps) {
             if (typeof item.content === 'string') {
                 return (
                     <TreeItem key={index} itemId={item.itemId}  onClick={() => expandItem(item.itemId)}
-                        label={
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            {item.tag + attributes.join('')} 
-                            <IconButton onClick={(e) => { e.stopPropagation(); onClick(item); }}>
-                                <AddCircleIcon htmlColor='white'/>
-                            </IconButton>
-                        </div>
-                        }  
+                        label={selectionButtons(item.itemId, item.tag + attributes.join(''))}  
                     >
                         <TreeItem itemId={item.itemId + index} label={item.content} />
                         
@@ -64,13 +78,25 @@ export default function WTTreeView ({scrapedData, onClick}: WebScrapeProps) {
             }
 
             return (
-                <TreeItem key={index} itemId={item.itemId} label={item.tag + attributes.join('')} onClick={() => expandItem(item.itemId)}>
+                <TreeItem key={index} itemId={item.itemId} label={selectionButtons(item.itemId, item.tag + attributes.join(''))} onClick={() => expandItem(item.itemId)}>
                     { item.content && renderScrapedJson(item.content) }
                 </TreeItem>
             );
         }
         );
     }
+
+
+    useEffect(() => {
+        console.log(querySelectorFilter)
+
+        // Decompose the querySelectorFilter into #id, .class, tag
+        // and filter the tree view based on the querySelectorFilter
+        IM HERE FILTER THE TREE BY QUERY SELECTOR FILTER : EXAMPLE
+        const [tag, id, className] = querySelectorFilter
+        console.log({tag, id, className})
+
+    }, [querySelectorFilter])
 
     return (
       

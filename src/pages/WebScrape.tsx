@@ -8,6 +8,9 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
 import WTTextField from "../components/WTTextField";
+import {extractAllIds} from "../components/commonFunctions";
+import {contentType} from "../components/models";
+import ButtonGroup from '@mui/material/ButtonGroup';
 
 interface ScrapedData {
     itemId: string;
@@ -242,8 +245,59 @@ const sampleSelectedData: ScrapedData =  {
    
 export default function WebScrape () {
 
-  const handleTreeClick = (item: ScrapedData) => {
-    console.log('Tree clicked: ', item);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+ 
+  const handleTreeClick = (itemId: string, selectionType: 'node' | 'tree') => {
+
+    let itemsToAdd = new Set<string>([itemId]);
+
+    if(selectionType === 'tree') {
+
+      const currentItem = findCurrentItem(itemId, sampleScrapedData[0]);
+      if(currentItem === null) return;
+      itemsToAdd = new Set([...itemsToAdd, ...extractAllIds([currentItem])]);
+      
+    } 
+  
+    setSelectedIds((prevSelectedIds) => {
+      return new Set([...prevSelectedIds, ...itemsToAdd]); 
+    });
+    
+  }
+
+  const findCurrentItem = (itemId: string, data: ScrapedData): ScrapedData | null => {
+    if(data.itemId === itemId) return data;
+
+    if(Array.isArray(data.content)) {
+      for(const child of data.content) {
+        const result = findCurrentItem(itemId, child);
+        if(result) return result;
+      }
+    }
+
+    return null;
+  }
+ 
+  const removeSelectedItem = (itemId: string) => {
+    setSelectedIds((prevSelectedIds) => {
+      const newSelectedIds = new Set(prevSelectedIds);
+      newSelectedIds.delete(itemId);
+      return newSelectedIds;
+    });
+  }
+
+  const clearTableContent = (itemIds: string[], contentType: contentType ) => {
+
+    if(contentType === 'table') {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds((prevSelectedIds) => {
+        const newSelectedIds = new Set(prevSelectedIds);
+        itemIds.forEach((itemId) => newSelectedIds.delete(itemId));
+        return newSelectedIds;
+      });
+    }
+    
   }
 
   const [includeSelectorAttributes, setIncludeSelectorAttributes] = useState(true);
@@ -287,8 +341,16 @@ export default function WebScrape () {
     a.click();
   };
 
+
+  // Filter the tree
+  const [querySelector, setQuerySelector] = useState('');
+
+  const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuerySelector(event.target.value);
+  }
+
   return (
-      <Box>
+      <Box mb={2}>
           <Grid container spacing={2} size={12} justifyContent="center">
 
               <Grid size={{ xs: 9 }} >
@@ -315,58 +377,66 @@ export default function WebScrape () {
 
               <Grid size={{ xs: 4 }}>
                   <WTTextField
-                    label="Website URL"
+                    label="Search elements"
                     variant="outlined"
                     autoComplete="off"
                     className="WT-text-field"
                     fullWidth
                     size="small"
+                    helperText="Use css selectors to search elements in the tree view. Ex: #id, .class, tag, etc."
+                    onChange={handleTextFieldChange}
+                    id="querySelector"
                   />
 
-                  <Box className="tree-container" sx={{ backgroundColor: 'primary.main', transition: 'background-color 0.2s ease' }} color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'71vh'} overflow={'auto'}>
+
+                  <Box 
+                    sx={{ 
+                      backgroundColor: 'primary.main', transition: 'background-color 0.2s ease',
+                    }} 
+                    color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'71vh'} overflow={'auto'}
+                  >
                       
-                      <WTTreeView scrapedData={sampleScrapedData} onClick={handleTreeClick}/>
+                    <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} querySelectorFilter={querySelector} onClick={handleTreeClick}/>
                               
                   </Box>
                   
               </Grid>
 
-              <Grid container spacing={2}  sx={{ display: "flex",  justifyContent: "end",}} size={{ xs: 7 }}  >
+              <Grid container spacing={2}  sx={{ display: "flex", flexDirection: 'column',  justifyContent: "space-between" }} size={{ xs: 7 }}  >
 
                 <Grid size={12} >
-                  <WTTable selectedData={sampleSelectedData} displaySelectorAttributes={includeSelectorAttributes}/>
+                  <WTTable scrapedData={sampleSelectedData} selectedIds={selectedIds} onRemoveRow={removeSelectedItem} onClearContent={clearTableContent}  displaySelectorAttributes={includeSelectorAttributes}/>
                 </Grid>
 
-                <Grid size={12} sx={{ display: "flex",  justifyContent: "end",}}>
-                  
-                  <Tooltip enterDelay={500} title="Export to csv">
+                <Grid size={12} sx={{ display: "flex", justifyContent: "end" }}>
+
+                  <ButtonGroup variant="contained" color="primary" aria-label="contained primary button group">
+
                     <Button
-                      variant="contained"
-                      color="primary"
-                      sx={{ ml: '10px', textTransform: 'none'  }}
+                      sx={{ textTransform: 'none' }}
                       onClick={downloadCSV}
                     > 
                       Download CSV &nbsp;
                       <FileDownloadIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
                     </Button>
-                  </Tooltip>
 
-                  <Tooltip enterDelay={500} title="Include selector attributes">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      sx={{ ml: '10px', textTransform: 'none'  }}
-                      onClick={toggleSelectorAttributes}
-                    > 
-                      Selector attributes &nbsp;
-                      {includeSelectorAttributes ? 
-                          <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
-                        :
-                          <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
-                      }
+                    <Tooltip enterDelay={500} title="Include selector attributes">
+                      <Button
+                        sx={{ textTransform: 'none' }}
+                        onClick={toggleSelectorAttributes}
+                      > 
+                        Selector attributes &nbsp;
+                        {includeSelectorAttributes ? 
+                            <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                          :
+                            <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                        }
 
-                    </Button>
-                  </Tooltip>
+                      </Button>
+                    </Tooltip>
+
+                  </ButtonGroup>
+
                 </Grid>
 
               </Grid>

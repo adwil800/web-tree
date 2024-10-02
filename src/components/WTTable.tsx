@@ -7,34 +7,39 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import CodeOffIcon from '@mui/icons-material/CodeOff';
-import {ScrapedData} from './models';
+import {contentType, ScrapedData} from './models';
 import {extractAttributes} from './commonFunctions';
 import WTAlert from './WTAlert';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import {Box, IconButton} from '@mui/material';
+import WTSplitButton from './WTSplitButton';
 
 interface WTTableProps {
-    selectedData: ScrapedData;
+    scrapedData: ScrapedData | null;
+    selectedIds: Set<string>;
     displaySelectorAttributes: boolean;
+    onClearContent: (itemIds: string[], contentType: contentType) => void;
+    onRemoveRow: (itemId: string) => void;
 }
 
+const tableCellHoverSX = {
+    transition: 'ease 0.2s',
+    '&:hover': {
+        backgroundColor: 'secondary.main',
+        cursor: 'pointer'
+    }
+}
+
+const cellTextSX = {
+    '.MuiTableCell-root': {
+        color: 'white'
+    }
+}
 const headerSX = { backgroundColor: 'secondary.main', transition: 'background-color 0.2s ease' }
 
-export default function WTTable({ selectedData, displaySelectorAttributes }: WTTableProps) {
+export default function WTTable({ scrapedData, selectedIds, displaySelectorAttributes, onClearContent, onRemoveRow }: WTTableProps) {
 
     const [showAlert, setShowAlert] = React.useState(false);
-
-    const tableCellHover = {
-        transition: 'ease 0.2s',
-        '&:hover': {
-            backgroundColor: 'secondary.main',
-            cursor: 'pointer'
-        }
-    }
-
-    const cellText = {
-        '.MuiTableCell-root': {
-            color: 'common.white'
-        }
-    }
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(`document.querySelector('${text}')`);
@@ -45,9 +50,14 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
         setShowAlert(false);
     }
 
-    const genRows = (data: ScrapedData, selector: string, contentNth = {} as Record<string, {current: number, amount: number}>): React.ReactNode => {
+    const genRows = (data: ScrapedData | null, selector: string, contentNth = {} as Record<string, {current: number, amount: number}>): React.ReactNode => {
 
         if( !data ) return;
+        if( data.itemId && !selectedIds.has(data.itemId)) {
+
+            //If the item is not selected, skip it and render its children
+            return Array.isArray(data.content) && data.content?.map((item) => genRows(item,  `${selector}${data.tag} > `, contentNth));
+        }
 
         let currSelector = selector + data.tag;
 
@@ -74,13 +84,19 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
             return (
                 <TableRow key={data.itemId}>
                     <TableCell>{data.itemId}</TableCell>
+                    
                     <TableCell component="th" scope="row">{data.tag}</TableCell>
-                    <TableCell sx={tableCellHover} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                    <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
                     <TableCell align="right" >
                         {attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>}
                     </TableCell>
                     <TableCell align="right">String</TableCell>
                     <TableCell align="right">{data.content}</TableCell>
+                    <TableCell align="center"> 
+                        <IconButton onClick={() => onRemoveRow(data.itemId)}>
+                            <RemoveCircleIcon htmlColor={'white'} />
+                        </IconButton>
+                    </TableCell>
                 </TableRow>
             )
 
@@ -105,7 +121,7 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
                     <TableRow >
                         <TableCell>{data.itemId}</TableCell>
                         <TableCell component="th" scope="row">{data.tag}</TableCell>
-                        <TableCell sx={tableCellHover} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                        <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
                         <TableCell align="right" >
                             {attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>}
                         </TableCell>
@@ -125,6 +141,11 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
                                 : <CodeOffIcon className='mr-4'/>
                             }
                         </TableCell>
+                        <TableCell align="center"> 
+                            <IconButton onClick={() => onRemoveRow(data.itemId)}>
+                                <RemoveCircleIcon htmlColor={'white'} />
+                            </IconButton>
+                        </TableCell>
                     </TableRow>
                     {data.content.map((item) => genRows(item,  `${currSelector} > `, contentNth))}
                 </React.Fragment>
@@ -137,22 +158,72 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
             <TableRow key={data.itemId}>
                 <TableCell>{data.itemId}</TableCell>
                 <TableCell component="th" scope="row">{data.tag}</TableCell>
-                <TableCell sx={tableCellHover} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
                 <TableCell align="right" >
                     {selectorAttributes.length ? selectorAttributes.join('') : <CodeOffIcon className='mr-4'/>}
                 </TableCell>
                 <TableCell align="right"><CodeOffIcon className='mr-4'/></TableCell>
                 <TableCell align="right"><CodeOffIcon className='mr-4'/></TableCell>
+                <TableCell align="center"> 
+                    <IconButton onClick={() => onRemoveRow(data.itemId)}>
+                        <RemoveCircleIcon htmlColor={'white'} />
+                    </IconButton>
+                </TableCell>
             </TableRow>
         );
 
     }
 
+    const handleClearContent = (contentType: contentType) => {
+        
+        if(!selectedIds.size || !scrapedData) return;
+
+        const itemIds: string[] = [];
+
+        if(contentType !== 'table') {
+
+            const filterByContentType = (data: ScrapedData | null) => {
+
+                if(!data) return;
+
+                if(data.itemId && selectedIds.has(data.itemId) ) {
+                    if(contentType === 'tag' && Array.isArray(data.content)) {
+                        itemIds.push(data.itemId);
+                    } else if(contentType === 'empty' && !data.content) {
+                        itemIds.push(data.itemId);
+                    } else if(contentType === 'string' && typeof data.content === 'string') {
+                        itemIds.push(data.itemId);
+                    }
+                }
+
+                data.content && Array.isArray(data.content) && data.content.map((item) => filterByContentType(item));
+                
+            }
+
+            filterByContentType(scrapedData);
+
+        }
+
+        onClearContent(itemIds, contentType);
+
+    }
 
     return (
         <>
-            <TableContainer component={Paper}   sx={{ maxHeight: '70vh' }} >
-                <Table aria-label="WebScrape table" id="WTTable"  sx={{ backgroundColor: 'primary.main', ...cellText, transition: 'background-color 0.2s ease' }}  stickyHeader  >
+
+            <Box sx={{display: 'flex', mb: 4, alignItems: 'center' }}>
+                <WTSplitButton 
+                    options={[
+                        {label: 'Clear table', action: () => handleClearContent('table')},
+                        {label: 'Clear TAG content type', action: () => handleClearContent('tag')},
+                        {label: 'Clear <\\> content type', action: () => handleClearContent('empty')},
+                        {label: 'Clear STRING content type', action: () => handleClearContent('string')},
+                    ]}
+                />
+            </Box>
+
+            <TableContainer component={Paper}  sx={{ maxHeight: '65vh' }} >
+                <Table aria-label="WebScrape table" id="WTTable"  sx={{   backgroundColor: 'primary.main', ...cellTextSX, transition: 'background-color 0.2s ease' }}  stickyHeader  >
 
                     <TableHead>
                         <TableRow>
@@ -162,15 +233,16 @@ export default function WTTable({ selectedData, displaySelectorAttributes }: WTT
                             <TableCell sx={headerSX} align="right">Attributes</TableCell>
                             <TableCell sx={headerSX} align="right">Content Type</TableCell>
                             <TableCell sx={headerSX} align="right">Content</TableCell>
+                            <TableCell sx={headerSX} align="right">Remove row</TableCell>
                         </TableRow>
                     </TableHead>
 
-                    <TableBody> 
-                        { genRows(selectedData, '') }
+                    <TableBody sx={{maxHeight: 10}}> 
+                        { genRows(scrapedData, '') }
                     </TableBody>
                 </Table>
             </TableContainer>
-           <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} message={'Copied to clipboard'} />
+            <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} message={'Copied to clipboard'} />
         </>
     );
 }
