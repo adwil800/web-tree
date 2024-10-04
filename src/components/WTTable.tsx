@@ -53,29 +53,47 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
     const genRows = (data: ScrapedData | null, selector: string, contentNth = {} as Record<string, {current: number, amount: number}>): React.ReactNode => {
 
         if( !data ) return;
-        if( data.itemId && !selectedIds.has(data.itemId)) {
-
-            //If the item is not selected, skip it and render its children
-            return Array.isArray(data.content) && data.content?.map((item) => genRows(item,  `${selector}${data.tag} > `, contentNth));
-        }
 
         let currSelector = selector + data.tag;
 
         //Handle selector attributes including nth-child
-    
+
         const attributes = extractAttributes(data.attributes || {}, false);
         const selectorAttributes = extractAttributes(data.attributes || {});
 
         if(displaySelectorAttributes) {
+
             currSelector += selectorAttributes.filter((attr) => attr.startsWith('#') || attr.startsWith('.')).join('');
-            
+
             //Add nth-child if there are multiple tags of the same type
             if(contentNth[data.tag] && contentNth[data.tag].amount > 1) {
-                currSelector += `:nth-child(${contentNth[data.tag].current})`;
+                currSelector += `:nth-child(${contentNth[data.tag].current})`; 
 
                 //Increment the current nth-child
                 contentNth[data.tag].current += 1;
             } 
+
+        }
+        
+        //When the item is not selected, wait for the attributes to be extracted for the css selector and skip it and render its children
+        if(data.itemId && !selectedIds.has(data.itemId)) {
+           
+            if(Array.isArray(data.content)) {
+
+                const contentDict: Record<string, number> = data.content.reduce((acc, item) => {
+                    acc[item.tag] = (acc[item.tag] || 0) + 1;
+                    return acc;
+                }, {} as Record<string, number>);
+
+                // Run through contentDict and create contentNth adding currentNth and the amount of tags
+                Object.keys(contentDict).forEach((key) => {
+                    contentNth[key] = { current: 1, amount: contentDict[key]};
+                });
+
+                return data.content.map((item) => genRows(item,  `${currSelector} > `, contentNth));
+            } 
+
+            return;
         }
 
         //When content is a string
@@ -116,6 +134,7 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                 contentNth[key] = { current: 1, amount: contentDict[key]};
             });
 
+
             return (
                 <React.Fragment key={data.itemId}>
                     <TableRow >
@@ -152,7 +171,7 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
             );
             
         } 
-
+        
         //When there's no content
         return (
             <TableRow key={data.itemId}>

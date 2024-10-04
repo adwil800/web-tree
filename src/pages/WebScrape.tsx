@@ -18,7 +18,7 @@ interface ScrapedData {
     content?: ScrapedData[] | string;
     attributes?: { [key: string]: string };
 }
-
+//TODO  Make sure that every key is set to lower case
 const sampleScrapedData: ScrapedData[] = 
 [
     { 
@@ -59,6 +59,11 @@ const sampleScrapedData: ScrapedData[] =
             {
           "itemId": "6",
           "tag": "section",
+          "attributes": {
+            "class": "section111" ,
+            "className": "sampleSection",
+            "id": "section1",
+          },
               "content": [
                 {
                   "itemId": "7",
@@ -72,7 +77,7 @@ const sampleScrapedData: ScrapedData[] =
                       "itemId": "8",
                       "tag": "li",
                       "attributes": {
-                        "Class": "product listItem"
+                        "class": "product listItem"
                       },
                       "content": [
                         {
@@ -89,16 +94,16 @@ const sampleScrapedData: ScrapedData[] =
                           "attributes": {
                             "class": "product-price"
                           },
-                          "content": "$200"
+                          "content": "$3220"
                         }
                       ]
                     },
                     {
                         "itemId": "11",
                       "tag": "li",
-                      "attributes": {
-                        "Class": "product listItem"
-                      },
+                      // "attributes": {
+                      //   "Class": "product listItem"
+                      // },
                       "content": [
                         {
                         "itemId": "12",
