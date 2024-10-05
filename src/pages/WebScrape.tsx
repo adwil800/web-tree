@@ -2,7 +2,7 @@ import {Box, Button, Tooltip} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
 import WTTable from "../components/WTTable";
-import WTTreeView from "../components/WTTreeView";
+import WTTreeView from "../components/WTTreeView/WTTreeView";
 import {useState} from "react";
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -124,9 +124,96 @@ const sampleScrapedData: ScrapedData[] =
                       ]
                     }
                   ]
+                },
+                {
+                  "itemId": "117",
+                  "tag": "ul",
+                  "attributes": {
+                    "id": "AAAAAAAAAAAAAAAA",
+                  },
+                  "content": [
+                    {
+                      "itemId": "82",
+                      "tag": "li",
+                      "attributes": {
+                        "class": "Puroducto Liasto"
+                      },
+                      "content": [
+                        {
+                        "itemId": "29",
+                        "tag": "p",
+                        "attributes": {
+                          "class": "product-nomme"
+                        },
+                        "content": "laptop"
+                        }
+                      ]
+                    },
+                  ]
+                },
+                {
+                "itemId": "130",
+                "tag": "p",
+                  "content":   [
+                    {
+                      "itemId": "13021",
+                      "tag": "span",
+                      "content": "$200"
+                    },
+                    {
+                      "itemId": "1301",
+                      "tag": "span",
+                      "content": "laptop"
+                    },
+                    {
+                      "itemId": "13320121",
+                      "tag": "span",
+                        "content": [
+                          {
+                            "itemId": "14130211",
+                            "tag": "div",
+                            "content": "laptop"
+                          },
+                        ]
+                      }
+                  ]
                 }
               ]
-            }
+            },
+            {
+              "itemId": "1171",
+              "tag": "ul",
+              "attributes": {
+                "id": "BBBBBBBBBBBBBBBBB",
+              },
+              "content": [
+                {
+                  "itemId": "812",
+                  "tag": "li",
+                  "attributes": {
+                    "class": "ITEMMMM"
+                  },
+                  "content": [
+                    {
+                    "itemId": "129",
+                    "tag": "p",
+                      "attributes": {
+                        "class": ""
+                      },
+                      "content": "SUPHA"
+                    },
+                    {
+                    "itemId": "1310",
+                    "tag": "p",
+                      "attributes": {
+                        "class": ""
+                      },
+                      "content": "$34000"
+                    }
+                  ]
+                },
+              ]
+            },
           ]
         }
       ]
@@ -347,12 +434,6 @@ export default function WebScrape () {
   };
 
 
-  // Filter the tree
-  const [querySelector, setQuerySelector] = useState('');
-
-  const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuerySelector(event.target.value);
-  }
 
   return (
       <Box mb={2}>
@@ -381,30 +462,9 @@ export default function WebScrape () {
               </Grid>
 
               <Grid size={{ xs: 4 }}>
-                  <WTTextField
-                    label="Search elements"
-                    variant="outlined"
-                    autoComplete="off"
-                    className="WT-text-field"
-                    fullWidth
-                    size="small"
-                    helperText="Use css selectors to search elements in the tree view. Ex: #id, .class, tag, etc."
-                    onChange={handleTextFieldChange}
-                    id="querySelector"
-                  />
-
-
-                  <Box 
-                    sx={{ 
-                      backgroundColor: 'primary.main', transition: 'background-color 0.2s ease',
-                    }} 
-                    color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'71vh'} overflow={'auto'}
-                  >
-                      
-                    <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} querySelectorFilter={querySelector} onClick={handleTreeClick}/>
-                              
-                  </Box>
                   
+                <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick}/>
+                              
               </Grid>
 
               <Grid container spacing={2}  sx={{ display: "flex", flexDirection: 'column',  justifyContent: "space-between" }} size={{ xs: 7 }}  >

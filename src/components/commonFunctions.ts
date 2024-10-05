@@ -40,7 +40,7 @@ export const extractAttributes = (attributes: TagAttributes, replaceSelectors = 
 
 
 
-export const extractAllIds = (data: ScrapedData[]) => {
+export const extractAllIds = (data: Readonly<ScrapedData[]>) => {
   return data.reduce((acc, item) => {
       acc.push(item.itemId);
       if (item.content && Array.isArray(item.content)) {
