@@ -1,6 +1,5 @@
-import {Box, Button, Tooltip} from "@mui/material";
+import {Box, Button,  Tooltip} from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import SearchIcon from '@mui/icons-material/Search';
 import WTTable from "../components/WTTable";
 import WTTreeView from "../components/WTTreeView/WTTreeView";
 import {useState} from "react";
@@ -11,6 +10,8 @@ import WTTextField from "../components/WTTextField";
 import {extractAllIds} from "../components/commonFunctions";
 import {contentType} from "../components/models";
 import ButtonGroup from '@mui/material/ButtonGroup';
+import WTConfirmationDialog from "../components/WTConfirmationDialog";
+import FastRewindIcon from '@mui/icons-material/FastRewind';
 
 interface ScrapedData {
     itemId: string;
@@ -254,16 +255,12 @@ const sampleSelectedData: ScrapedData =  {
     {
       "itemId": "5",
       "tag": "body",
-      "attributes": {
-        "className": "body1",
-        "name": "body11"
-      },
       "content": [
         {
       "itemId": "6",
       "tag": "section",
       "attributes": {
-        "class": "section111",
+        "class": "section111" ,
         "className": "sampleSection",
         "id": "section1",
       },
@@ -280,7 +277,7 @@ const sampleSelectedData: ScrapedData =  {
                   "itemId": "8",
                   "tag": "li",
                   "attributes": {
-                    "Class": "product listItem"
+                    "class": "product listItem"
                   },
                   "content": [
                     {
@@ -297,16 +294,16 @@ const sampleSelectedData: ScrapedData =  {
                       "attributes": {
                         "class": "product-price"
                       },
-                      "content": "$200"
+                      "content": "$3220"
                     }
                   ]
                 },
                 {
                     "itemId": "11",
                   "tag": "li",
-                  "attributes": {
-                    "Class": "product listItem"
-                  },
+                  // "attributes": {
+                  //   "Class": "product listItem"
+                  // },
                   "content": [
                     {
                     "itemId": "12",
@@ -327,15 +324,107 @@ const sampleSelectedData: ScrapedData =  {
                   ]
                 }
               ]
+            },
+            {
+              "itemId": "117",
+              "tag": "ul",
+              "attributes": {
+                "id": "AAAAAAAAAAAAAAAA",
+              },
+              "content": [
+                {
+                  "itemId": "82",
+                  "tag": "li",
+                  "attributes": {
+                    "class": "Puroducto Liasto"
+                  },
+                  "content": [
+                    {
+                    "itemId": "29",
+                    "tag": "p",
+                    "attributes": {
+                      "class": "product-nomme"
+                    },
+                    "content": "laptop"
+                    }
+                  ]
+                },
+              ]
+            },
+            {
+            "itemId": "130",
+            "tag": "p",
+              "content":   [
+                {
+                  "itemId": "13021",
+                  "tag": "span",
+                  "content": "$200"
+                },
+                {
+                  "itemId": "1301",
+                  "tag": "span",
+                  "content": "laptop"
+                },
+                {
+                  "itemId": "13320121",
+                  "tag": "span",
+                    "content": [
+                      {
+                        "itemId": "14130211",
+                        "tag": "div",
+                        "content": "laptop"
+                      },
+                    ]
+                  }
+              ]
             }
           ]
-        }
+        },
+        {
+          "itemId": "1171",
+          "tag": "ul",
+          "attributes": {
+            "id": "BBBBBBBBBBBBBBBBB",
+          },
+          "content": [
+            {
+              "itemId": "812",
+              "tag": "li",
+              "attributes": {
+                "class": "ITEMMMM"
+              },
+              "content": [
+                {
+                "itemId": "129",
+                "tag": "p",
+                  "attributes": {
+                    "class": ""
+                  },
+                  "content": "SUPHA"
+                },
+                {
+                "itemId": "1310",
+                "tag": "p",
+                  "attributes": {
+                    "class": ""
+                  },
+                  "content": "$34000"
+                }
+              ]
+            },
+          ]
+        },
       ]
     }
   ]
 }
+
+interface WebScrapeProps {
+  webUrl: string;
+  backToSearch: () => void;
+}
    
-export default function WebScrape () {
+export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
  
@@ -346,8 +435,9 @@ export default function WebScrape () {
     if(selectionType === 'tree') {
 
       const currentItem = findCurrentItem(itemId, sampleScrapedData[0]);
+        
       if(currentItem === null) return;
-      itemsToAdd = new Set([...itemsToAdd, ...extractAllIds([currentItem])]);
+        itemsToAdd = new Set([...itemsToAdd, ...extractAllIds([currentItem])]);
       
     } 
   
@@ -435,6 +525,29 @@ export default function WebScrape () {
 
 
 
+  // App interaction functions
+  
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const exitScraping = () => {
+    setShowExitDialog(true);
+  }
+
+  const onWTDialogClose = (response: 'yes' | 'no') => {
+
+    setShowExitDialog(false);
+
+    if(response === 'yes') {
+      backToSearch();
+    }
+
+  }
+
+  const onTreeAddOnSearch = (itemIds: string[]) => {
+    setSelectedIds((prevSelectedIds) => {
+      return new Set([...prevSelectedIds, ...itemIds]);
+    });
+  }
+
   return (
       <Box mb={2}>
           <Grid container spacing={2} size={12} justifyContent="center">
@@ -442,28 +555,32 @@ export default function WebScrape () {
               <Grid size={{ xs: 9 }} >
 
                   <Box className="flex">
+
                     <WTTextField
-                      label="Website URL"
+                      label={'Website URL'}
                       variant="outlined"
                       autoComplete="off"
                       className="WT-text-field"
                       fullWidth
+                      value={webUrl}
                     />
                       
                     <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ ml: '10px' }}
+                      variant="contained"
+                      color="primary"
+                      sx={{ ml: '10px' }}
+                      onClick={exitScraping}
                     >
-                        <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
+                      <FastRewindIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
                     </Button>
+
                   </Box>
                   
               </Grid>
 
               <Grid size={{ xs: 4 }}>
                   
-                <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick}/>
+                <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick} onAddOnSearch={onTreeAddOnSearch}/>
                               
               </Grid>
 
@@ -507,6 +624,8 @@ export default function WebScrape () {
               </Grid>
 
           </Grid>
+
+          <WTConfirmationDialog isOpen={showExitDialog} title="You're about to exit the current scraping session" caption="Any changes made will be lost" onClose={onWTDialogClose} />
       </Box>
   );
 

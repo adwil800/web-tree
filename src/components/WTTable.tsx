@@ -226,6 +226,10 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
         onClearContent(itemIds, contentType);
 
     }
+    IM HERE ADD LOADING ANIMATION ON SELECTEDIDS CHANGE ALSO FIX THIS ERROR IN RELATION TO THE PAGE TRANSITIONS
+
+    findDOMNode was passed an instance of Transition which is inside StrictMode. Instead, add a ref directly to the element you 
+    want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node
 
     return (
         <>
@@ -261,7 +265,7 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                     </TableBody>
                 </Table>
             </TableContainer>
-            <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} message={'Copied to clipboard'} />
+            <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'success'} message={'Copied to clipboard'} />
         </>
     );
 }

@@ -66,7 +66,7 @@ const matchesSelector = (element: ScrapedData, selector: string, allowDescendant
 };
 
 export const filterBySelector = (data: ScrapedData[], selector: string): { path: string[], itemId: string }[] => {
-    const selectors = selector.split(" ");
+    const selectors = selector.split(/\s+/);
     let result: { path: string[], itemId: string }[] = [];
 
     const recursiveFilter = (elements: ScrapedData[], remainingSelectors: string[], currentPath: string[], allowDescendants: boolean) => {

@@ -3,14 +3,16 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import CheckIcon from '@mui/icons-material/Check';
+import ErrorIcon from '@mui/icons-material/Error';
 
 interface WTAlertProps {
     isOpen: boolean;
     message: string;
+    type: 'success' | 'error';
     CloseAlert: () => void;
 }
 
-export default function WTAlert({ isOpen, message, CloseAlert }: WTAlertProps) {
+export default function WTAlert({ isOpen, message, type, CloseAlert }: WTAlertProps) {
 
     React.useEffect(() => {
         const alert = setTimeout(() => {
@@ -27,7 +29,7 @@ export default function WTAlert({ isOpen, message, CloseAlert }: WTAlertProps) {
         
       <Collapse in={isOpen}>
         <Alert
-            icon={<CheckIcon fontSize="inherit" htmlColor='white' />} 
+            icon={type === 'success' ? <CheckIcon fontSize="inherit" htmlColor='white' /> : <ErrorIcon fontSize="inherit" htmlColor='white' />} 
             sx={{ backgroundColor: 'primary.main', color: 'white' }}
         >
           {message}

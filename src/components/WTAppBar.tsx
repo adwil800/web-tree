@@ -15,7 +15,7 @@ export default function WTAppBar({ toggleTheme, isDarkMode }: WTAppBarProps){
 
       <Box sx={{ display: 'flex', mt: 1, flexGrow: 1, justifyContent: 'space-between', alignItems: 'center' }}>
         
-        <img src={'/images/AppName.svg'} alt="app logo" height={70} />
+        <img src={`/images/${isDarkMode ? 'AppNameDark' : 'AppName'}.svg`} alt="app logo" height={70} />
 
         <Tooltip title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'} enterDelay={500}>
           <IconButton onClick={toggleTheme}>

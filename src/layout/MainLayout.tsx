@@ -10,7 +10,7 @@ interface MainLayoutProps  {
 export default function MainLayout({ children, toggleTheme, isDarkMode }: MainLayoutProps) {
 
     return (
-        <Box className={`max-site-width margin-auto ${isDarkMode ? 'dark-bg' : 'light-bg'}`} sx={{minHeight: '100vh'}}>
+        <Box className={`max-site-width margin-auto transition-bg ${isDarkMode ? 'dark-bg' : 'light-bg'}`} sx={{minHeight: '100vh'}}>
             <WTAppBar toggleTheme={toggleTheme} isDarkMode={isDarkMode}/>
             
             <Box mt={3}>

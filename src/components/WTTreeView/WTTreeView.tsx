@@ -3,25 +3,28 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import {ScrapedData} from "../models";
 import IconButton from '@mui/material/IconButton';
 import { useState} from 'react';
-import {extractAllIds, extractAttributes} from '../commonFunctions';
-import {Box, Button, Tooltip} from '@mui/material';
+import {extractAttributes} from '../commonFunctions';
+import {Box, Button, Checkbox, Tooltip} from '@mui/material';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CircleIcon from '@mui/icons-material/Circle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WTTextField from '../WTTextField';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import SearchIcon from '@mui/icons-material/Search';
+import BackupTableIcon from '@mui/icons-material/BackupTable';
+import WTTextField from '../WTTextField';
 import {extractIds, filterBySelector} from './functions';
 
 interface WebScrapeProps {
     scrapedData: ScrapedData[];
     selectedIds: Set<string>;
     onClick: (itemId: string, selectionType: 'node' | 'tree') => void;
+    onAddOnSearch: (itemIds: string[]) => void;
 }
  
-export default function WTTreeView ({scrapedData, selectedIds, onClick}: WebScrapeProps) {
+export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnSearch}: WebScrapeProps) {
 
-    const [expandedItems, setExpandedItems] = useState<string[]>(extractAllIds(scrapedData));
-
+    const [expandedItems, setExpandedItems] = useState<string[]>(scrapedData && scrapedData.length ? [scrapedData[0].itemId] : []);
 
     const expandItem = (itemId: string) => {
 
@@ -69,7 +72,7 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick}: WebScra
             if (typeof item.content === 'string') {
                 return (
                     <TreeItem key={index} itemId={item.itemId}  onClick={() => expandItem(item.itemId)}
-                        label={selectionButtons(item.itemId, item.tag + attributes.join('') + ' - ' + item.itemId)}  
+                        label={selectionButtons(item.itemId, item.tag + attributes.join(''))}  
                         sx={{ backgroundColor: filteredItemIds.includes(item.itemId) ? 'secondary.main' : 'primary.main'}}
                     >
                         <TreeItem itemId={item.itemId + index} label={item.content} />
@@ -80,7 +83,7 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick}: WebScra
 
             return (
                 <TreeItem key={index} itemId={item.itemId} onClick={() => expandItem(item.itemId)}
-                    label={selectionButtons(item.itemId, item.tag + attributes.join('') + ' - ' + item.itemId)} 
+                    label={selectionButtons(item.itemId, item.tag + attributes.join(''))} 
                     sx={{ backgroundColor: filteredItemIds.includes(item.itemId) ? 'secondary.main' : 'primary.main'}}
                 >
                     { item.content && renderScrapedJson(item.content) }
@@ -151,6 +154,10 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick}: WebScra
             setFilteredItemIds(itemIds);
             setNoFilterResults(false);
 
+            if(addOnSearch) {
+                onAddOnSearch(itemIds);
+            }
+
         } else {
             setNoFilterResults(true);
         }
@@ -163,33 +170,63 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick}: WebScra
         searchElements();
       }
     };
+
+
+    const [addOnSearch, setAddOnSearch] = useState(false);
+    const handleAddSearchedElements = () => {
+        setAddOnSearch(!addOnSearch);
+        console.log('onclick')
+    }
   
+    const iconProps = {
+        htmlColor: addOnSearch ? 'white' : 'info'
+    };
+
     return (
         
         <>
             <Box className="flex">
-                <WTTextField
-                    label="Search elements"
-                    variant="outlined"
-                    autoComplete="off"
-                    className="WT-text-field"
-                    fullWidth
-                    size="small"
-                    helperText="Use css selectors to search elements in the tree view. Ex: #id, .class, tag, etc."
-                    onChange={handleTextFieldChange}
-                    onKeyDown={(e) => handleKeyDown(e)}
-                    id="querySelector"
-                />
+                <Tooltip title={`Example query: body p "laptop"`} enterDelay={1000} PopperProps={{placement:'top'}}>
+                    <WTTextField
+                        label="Search elements"
+                        variant="outlined"
+                        autoComplete="off"
+                        className="WT-text-field"
+                        fullWidth
+                        size="small"
+                        helperText={`Use css selectors to search elements. Ex: #id, .class, tag and  "string content" `}
+                        onChange={handleTextFieldChange}
+                        onKeyDown={(e) => handleKeyDown(e)}
+                        id="querySelector"
+                    />
+                </Tooltip>
                     
+                <Tooltip title={"Immediately add to table on search"} sx={{fontSize: 14}} PopperProps={{placement:'top'}}>
                     <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ ml: '10px', height: '40px'}}
+                        size="small"
+                        onClick={handleAddSearchedElements}
+                    >
+                        <Box sx={{ display: 'flex', pl: 2, pr: 2}}>
+                            <AccountTreeOutlinedIcon {...iconProps} fontSize={'large'} />
+                            <ArrowRightAltIcon {...iconProps} fontSize={'large'} />
+                            <BackupTableIcon {...iconProps} fontSize={'large'} />
+                        </Box>
+                    </Button>
+                </Tooltip>
+
+                <Button
                     variant="contained"
                     color="primary"
                     sx={{ ml: '10px', height: '40px'}}
                     size="small"
                     onClick={searchElements}
-                    >
-                        <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
-                    </Button>
+                >
+                    <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
+                </Button>
+
             </Box>
                 
             <Box 
