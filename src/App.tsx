@@ -4,7 +4,6 @@ import WebScrape from './pages/WebScrape';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import MainLayout from './layout/MainLayout';
 import {useEffect, useState} from 'react';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 
 function App() {
@@ -26,29 +25,18 @@ function App() {
   // Handle the transition between pages
   const [webUrl, setWebUrl] = useState<string>('');
   const [isScraping, setIsScraping] = useState<boolean>(false);
-  const [transitionClass, setTransitionClass] = useState<string>('slide-left');
 
   const handleWebUrl = (url: string) => {
 
-    setTransitionClass('slide-left');
-    
     // Validate the URL
     setWebUrl(url);
 
-    setTimeout(() => {
-      setIsScraping(true);
-    }, 100);
+    setIsScraping(true);
 
   }
 
   const backToSearch = () => {
-
-    setTransitionClass('slide-right');
-
-    setTimeout(() => {
-      setIsScraping(false);
-    }, 100);
-
+    setIsScraping(false);
   }
   
   // Render nothing while isDarkMode is null (loading state)
@@ -64,17 +52,12 @@ function App() {
       <MainLayout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
 
       
-          <TransitionGroup>
-            {isScraping ? (
-              <CSSTransition key="scrape" timeout={500} classNames={`${transitionClass}`}>
-                <WebScrape webUrl={webUrl} backToSearch={backToSearch} />
-              </CSSTransition>
-            ) : (
-              <CSSTransition key="search" timeout={500} classNames={`${transitionClass}`}>
-                <WebSearch onSearch={handleWebUrl} isDarkMode={isDarkMode}/>
-              </CSSTransition>
-            )}
-          </TransitionGroup>
+          {isScraping ? (
+              <WebScrape webUrl={webUrl} backToSearch={backToSearch} />
+          ) : (
+            
+              <WebSearch onSearch={handleWebUrl} isDarkMode={isDarkMode}/>
+          )}
 
 
       </MainLayout>

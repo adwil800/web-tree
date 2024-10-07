@@ -12,6 +12,7 @@ import {contentType} from "../components/models";
 import ButtonGroup from '@mui/material/ButtonGroup';
 import WTConfirmationDialog from "../components/WTConfirmationDialog";
 import FastRewindIcon from '@mui/icons-material/FastRewind';
+import {PageTransition} from "../components/Transitions";
 
 interface ScrapedData {
     itemId: string;
@@ -440,10 +441,15 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
         itemsToAdd = new Set([...itemsToAdd, ...extractAllIds([currentItem])]);
       
     } 
-  
-    setSelectedIds((prevSelectedIds) => {
-      return new Set([...prevSelectedIds, ...itemsToAdd]); 
-    });
+    
+    // Add items to the selectedIds state if they are not already present
+    const newItemsToAdd = [...itemsToAdd].filter((itemId) => !selectedIds.has(itemId));
+
+    if(newItemsToAdd.length > 0) {
+      setSelectedIds((prevSelectedIds) => {
+        return new Set([...prevSelectedIds, ...newItemsToAdd]);
+      });
+    }
     
   }
 
@@ -549,6 +555,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
   }
 
   return (
+    <PageTransition transitionKey="WebScrape">
       <Box mb={2}>
           <Grid container spacing={2} size={12} justifyContent="center">
 
@@ -627,6 +634,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
 
           <WTConfirmationDialog isOpen={showExitDialog} title="You're about to exit the current scraping session" caption="Any changes made will be lost" onClose={onWTDialogClose} />
       </Box>
+    </PageTransition>
   );
 
 };

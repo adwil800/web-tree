@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState} from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -13,6 +13,7 @@ import WTAlert from './WTAlert';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {Box, IconButton} from '@mui/material';
 import WTSplitButton from './WTSplitButton';
+import {ItemTransition} from './Transitions';
 
 interface WTTableProps {
     scrapedData: ScrapedData | null;
@@ -39,7 +40,9 @@ const headerSX = { backgroundColor: 'secondary.main', transition: 'background-co
 
 export default function WTTable({ scrapedData, selectedIds, displaySelectorAttributes, onClearContent, onRemoveRow }: WTTableProps) {
 
-    const [showAlert, setShowAlert] = React.useState(false);
+    const [showAlert, setShowAlert] = useState(false);
+
+    const selectedIdsArr = Array.from(selectedIds);
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(`document.querySelector('${text}')`);
@@ -50,9 +53,13 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
         setShowAlert(false);
     }
 
-    const genRows = (data: ScrapedData | null, selector: string, contentNth = {} as Record<string, {current: number, amount: number}>): React.ReactNode => {
+    const genRows = (data: ScrapedData | null, selector: string, contentNth = {} as Record<string, {current: number, amount: number}>, transitionDelayIndex = 1): React.ReactNode => {
+        // console.log([...selectedIdsArr])
+        // console.log(data?.itemId)
 
-        if( !data ) return;
+        IM HERE: Rather find the itemId row and add it somewhere you can later verify if its already there with selectedIds so that it doesnt have to be checked every time
+        
+        if(!data || !selectedIdsArr.length) return;
 
         let currSelector = selector + data.tag;
 
@@ -90,34 +97,60 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                     contentNth[key] = { current: 1, amount: contentDict[key]};
                 });
 
-                return data.content.map((item) => genRows(item,  `${currSelector} > `, contentNth));
+                return data.content.map((item) => genRows(item,  `${currSelector} > `, contentNth, transitionDelayIndex + 1));
             } 
 
             return;
         }
 
+        selectedIdsArr.splice(selectedIdsArr.indexOf(data.itemId), 1);
+
+        const genTableRow = (contentDict: Record<string, number> = {}, attributes: string[]) => {
+
+            const contentType = typeof data.content === 'string' ? 'String' : Array.isArray(data.content) ? 'Tag' : <CodeOffIcon className='mr-4'/>
+            const itemAttributes = attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>;
+            const content = () => {
+                if(typeof data.content === 'string') return data.content;
+                if(Object.keys(contentDict).length) {
+                    return Object.entries(contentDict).map(([key, amount]) => (
+                        <span key={key}>
+                        {key} x{amount} <br />
+                        </span>
+                    ))
+                };
+
+                return <CodeOffIcon className='mr-4'/>;
+            };
+
+            return (
+                <React.Fragment key={data.itemId}>
+                    <ItemTransition  component={'tr'} delay={transitionDelayIndex} origin='left'>
+            
+                        <TableCell>{data.itemId}</TableCell>
+                        
+                        <TableCell component="th" scope="row">{data.tag}</TableCell>
+                        <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
+                        <TableCell align="right">{ itemAttributes } </TableCell>
+                        <TableCell align="right">{ contentType }</TableCell>
+                        <TableCell align="right">{ content() }</TableCell>
+                        <TableCell align="center"> 
+                            <IconButton onClick={() => onRemoveRow(data.itemId)}>
+                                <RemoveCircleIcon htmlColor={'white'} />
+                            </IconButton>
+                        </TableCell>
+                    </ItemTransition>
+
+                    {   
+                        Array.isArray(data.content) &&
+                        data.content.map((item) => genRows(item,  `${currSelector} > `, contentNth, transitionDelayIndex + 1))
+                    }
+                </React.Fragment>
+            );
+        } 
+
         //When content is a string
         if (typeof data.content === 'string') {
-            
-            return (
-                <TableRow key={data.itemId}>
-                    <TableCell>{data.itemId}</TableCell>
-                    
-                    <TableCell component="th" scope="row">{data.tag}</TableCell>
-                    <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
-                    <TableCell align="right" >
-                        {attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>}
-                    </TableCell>
-                    <TableCell align="right">String</TableCell>
-                    <TableCell align="right">{data.content}</TableCell>
-                    <TableCell align="center"> 
-                        <IconButton onClick={() => onRemoveRow(data.itemId)}>
-                            <RemoveCircleIcon htmlColor={'white'} />
-                        </IconButton>
-                    </TableCell>
-                </TableRow>
-            )
-
+           return genTableRow({}, attributes);
         } 
 
         //When content is an array
@@ -134,62 +167,12 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                 contentNth[key] = { current: 1, amount: contentDict[key]};
             });
 
-
-            return (
-                <React.Fragment key={data.itemId}>
-                    <TableRow >
-                        <TableCell>{data.itemId}</TableCell>
-                        <TableCell component="th" scope="row">{data.tag}</TableCell>
-                        <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
-                        <TableCell align="right" >
-                            {attributes.length ? attributes.join('') : <CodeOffIcon className='mr-4'/>}
-                        </TableCell>
-                        <TableCell align="right">{Object.keys(contentDict).length ? 'Tag' : <CodeOffIcon className='mr-4'/>}</TableCell>
-                        <TableCell align="right">
-                            { 
-                                Object.keys(contentDict).length ?  
-
-                                    <>
-                                        {Object.entries(contentDict).map(([key, amount]) => (
-                                            <span key={key}>
-                                            {key} x{amount} <br />
-                                            </span>
-                                        ))}
-                                    </>
-                                
-                                : <CodeOffIcon className='mr-4'/>
-                            }
-                        </TableCell>
-                        <TableCell align="center"> 
-                            <IconButton onClick={() => onRemoveRow(data.itemId)}>
-                                <RemoveCircleIcon htmlColor={'white'} />
-                            </IconButton>
-                        </TableCell>
-                    </TableRow>
-                    {data.content.map((item) => genRows(item,  `${currSelector} > `, contentNth))}
-                </React.Fragment>
-            );
+            return genTableRow(contentDict, attributes);
             
         } 
         
         //When there's no content
-        return (
-            <TableRow key={data.itemId}>
-                <TableCell>{data.itemId}</TableCell>
-                <TableCell component="th" scope="row">{data.tag}</TableCell>
-                <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
-                <TableCell align="right" >
-                    {selectorAttributes.length ? selectorAttributes.join('') : <CodeOffIcon className='mr-4'/>}
-                </TableCell>
-                <TableCell align="right"><CodeOffIcon className='mr-4'/></TableCell>
-                <TableCell align="right"><CodeOffIcon className='mr-4'/></TableCell>
-                <TableCell align="center"> 
-                    <IconButton onClick={() => onRemoveRow(data.itemId)}>
-                        <RemoveCircleIcon htmlColor={'white'} />
-                    </IconButton>
-                </TableCell>
-            </TableRow>
-        );
+        return genTableRow({}, selectorAttributes)
 
     }
 
@@ -226,10 +209,9 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
         onClearContent(itemIds, contentType);
 
     }
-    IM HERE ADD LOADING ANIMATION ON SELECTEDIDS CHANGE ALSO FIX THIS ERROR IN RELATION TO THE PAGE TRANSITIONS
-
-    findDOMNode was passed an instance of Transition which is inside StrictMode. Instead, add a ref directly to the element you 
-    want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node
+    
+    const currRows = genRows(scrapedData, '');
+    
 
     return (
         <>
@@ -261,11 +243,12 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                     </TableHead>
 
                     <TableBody sx={{maxHeight: 10}}> 
-                        { genRows(scrapedData, '') }
+                        { currRows }  
                     </TableBody>
                 </Table>
             </TableContainer>
             <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'success'} message={'Copied to clipboard'} />
+
         </>
     );
 }

@@ -4,7 +4,7 @@ import {ScrapedData} from "../models";
 import IconButton from '@mui/material/IconButton';
 import { useState} from 'react';
 import {extractAttributes} from '../commonFunctions';
-import {Box, Button, Checkbox, Tooltip} from '@mui/material';
+import {Box, Button, Tooltip, Typography} from '@mui/material';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CircleIcon from '@mui/icons-material/Circle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -194,14 +194,13 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
                         className="WT-text-field"
                         fullWidth
                         size="small"
-                        helperText={`Use css selectors to search elements. Ex: #id, .class, tag and  "string content" `}
                         onChange={handleTextFieldChange}
                         onKeyDown={(e) => handleKeyDown(e)}
                         id="querySelector"
                     />
                 </Tooltip>
                     
-                <Tooltip title={"Immediately add to table on search"} sx={{fontSize: 14}} PopperProps={{placement:'top'}}>
+                <Tooltip title={"Select items on search"} sx={{fontSize: 14}} PopperProps={{placement:'top'}}>
                     <Button
                         variant="contained"
                         color="primary"
@@ -225,9 +224,12 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
                     onClick={searchElements}
                 >
                     <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
-                </Button>
-
+                </Button> 
             </Box>
+
+            <Typography fontSize={13} mt={0.2} ml={0.3}>
+                Use css selectors to search elements. Ex: #id, .class, tag and  "string content"
+            </Typography>
                 
             <Box 
                 sx={{ 
