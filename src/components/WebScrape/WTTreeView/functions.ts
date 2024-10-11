@@ -1,4 +1,5 @@
-import {ScrapedData} from "../models";
+import {ScrapedData} from "../../models";
+
 const matchesSelector = (element: ScrapedData, selector: string, allowDescendants: boolean = false): { matches: boolean; matchedItemId?: string } => {
     const tagRegex = /^[a-z]+/i;
     const classRegex = /\.([a-zA-Z0-9_-]+)/g; 

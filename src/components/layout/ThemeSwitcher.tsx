@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import {darkTheme, lightTheme} from '../theme';
+import {darkTheme, lightTheme} from '../../theme';
 
 interface ThemeSwitcherProps {
     children: React.ReactNode,

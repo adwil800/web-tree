@@ -1,13 +1,12 @@
 import './App.css';
 import WebSearch from './pages/WebSearch';
 import WebScrape from './pages/WebScrape';
-import ThemeSwitcher from './components/ThemeSwitcher';
 import MainLayout from './layout/MainLayout';
 import {useEffect, useState} from 'react';
+import ThemeSwitcher from './components/layout/ThemeSwitcher';
 
 
 function App() {
-
   const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null);
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode); 
@@ -18,6 +17,10 @@ function App() {
     const currentTheme = localStorage.getItem('isDarkMode');
     if (currentTheme) {
       setIsDarkMode(JSON.parse(currentTheme));
+    } else {
+      // No theme was set, so let's set the default theme
+      localStorage.setItem('isDarkMode', JSON.stringify(false));
+      setIsDarkMode(false);
     }
   }, []);
 

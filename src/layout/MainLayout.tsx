@@ -1,5 +1,5 @@
 import {Box} from "@mui/material";
-import WTAppBar from "../components/WTAppBar";
+import WTAppBar from "../components/layout/WTAppBar";
 
 interface MainLayoutProps  { 
     children: React.ReactNode, 

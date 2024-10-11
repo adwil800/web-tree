@@ -1,9 +1,7 @@
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
-import {ScrapedData} from "../models";
 import IconButton from '@mui/material/IconButton';
 import { useState} from 'react';
-import {extractAttributes} from '../commonFunctions';
 import {Box, Button, Tooltip, Typography} from '@mui/material';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -12,8 +10,10 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import BackupTableIcon from '@mui/icons-material/BackupTable';
-import WTTextField from '../WTTextField';
 import {extractIds, filterBySelector} from './functions';
+import {ScrapedData} from '../../models';
+import {extractAttributes} from '../../commonFunctions';
+import WTTextField from '../../WTTextField';
 
 interface WebScrapeProps {
     scrapedData: ScrapedData[];

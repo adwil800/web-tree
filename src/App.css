@@ -63,3 +63,9 @@
 .overflow-hidden {
   overflow: hidden;
 }
+
+pre {
+  white-space: pre-wrap;      /* Allows wrapping of the content */
+  word-wrap: break-word;      /* Ensures long words or URLs break if needed */
+  overflow-wrap: break-word;  /* Adds support for more browsers */
+}

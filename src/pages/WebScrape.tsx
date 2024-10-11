@@ -1,18 +1,18 @@
 import {Box, Button,  Tooltip} from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import WTTable from "../components/WTTable";
-import WTTreeView from "../components/WTTreeView/WTTreeView";
+import WTTable from "../components/WebScrape/WTTable";
 import {useState} from "react";
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
 import WTTextField from "../components/WTTextField";
-import {extractAllIds} from "../components/commonFunctions";
 import {contentType} from "../components/models";
 import ButtonGroup from '@mui/material/ButtonGroup';
-import WTConfirmationDialog from "../components/WTConfirmationDialog";
+import WTConfirmationDialog from "../components/layout/WTConfirmationDialog";
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 import {PageTransition} from "../components/Transitions";
+import WTTreeView from "../components/WebScrape/WTTreeView/WTTreeView";
+import {extractAllIds} from "../components/commonFunctions";
 
 interface ScrapedData {
     itemId: string;
