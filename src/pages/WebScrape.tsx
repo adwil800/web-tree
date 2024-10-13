@@ -614,19 +614,19 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
               {
                 isSmDown && 
                 <Grid size={{ xs: 11,  }} >
-              
-                    <Tabs
-                      value={value}
-                      onChange={handleChange}
-                      indicatorColor="secondary"
-                      textColor="inherit"
-                      variant="fullWidth"
-                      aria-label="full width tabs example"
-                    >
-                      <Tab label="HTML Tree"/>
-                      <Tab label="Selection table"/>
-                    </Tabs>
-                      
+            
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    indicatorColor="secondary"
+                    textColor="inherit"
+                    variant="fullWidth"
+                    aria-label="full width tabs example"
+                  >
+                    <Tab label="HTML Tree"/>
+                    <Tab label="Selection table"/>
+                  </Tabs>
+                    
                 </Grid>
               }
 
@@ -635,7 +635,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
                 <TabPanel value={isSmDown ? value : 0} index={0}>
                   <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick} onAddOnSearch={onTreeAddOnSearch}/>
                 </TabPanel>
-                              
+                
               </Grid>
 
                 <Grid container spacing={2}  sx={{ display: "flex", flexDirection: 'column',  justifyContent: "space-between" }} size={{ xs: 11, md: 7 }}  >
