@@ -1,4 +1,4 @@
-import {Box, Button, Typography} from "@mui/material";
+import {Box, Button, Typography, useMediaQuery} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
 import WTTextField from "../components/WTTextField";
@@ -6,6 +6,8 @@ import {useRef, useState} from "react";
 import WTAlert from "../components/layout/WTAlert";
 import {TypeAnimation} from "react-type-animation";
 import {PageTransition} from "../components/Transitions";
+
+import { useTheme } from '@mui/material/styles';
 
 const htmlText = `
     <html> 
@@ -74,14 +76,28 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
         setShowAlert(false);
     }
 
+    // Define breakpoints
+    const theme = useTheme();
+    const isSmDown = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMdDown = useMediaQuery(theme.breakpoints.down('md'));
+    const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+
     return (
         <PageTransition transitionKey="WebSearch">
-            <Box >
+            <Box>
                 <Grid container spacing={2} size={12}>
                     
-                    <Grid sx={{ pl: 10, }} size={{ xs: 6 }}>
+                    <Grid sx={{ pl: { xs: 2, md: 10 }, pr: { xs: 2, md: 0 } }} size={{ xs: 12, md: 6 }}>
 
-                        <Typography variant="h3">
+                        <Typography 
+                            variant="h3"
+                            sx={{
+                              fontSize: {
+                                xs: '2rem',  
+                                md: '3rem', 
+                              }
+                            }}
+                        >
                             Scan a website
                         </Typography>
 
@@ -111,23 +127,45 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
                             </Button>
                             
                         </Box>
-
-                        <pre>
-                            <TypeAnimation
-                                sequence={[htmlText]} // HTML text sequence
-                                wrapper="span"
-                                cursor={false}
-                                repeat={1}
-                                speed={99}
-                                style={{ fontSize: '15px', display: 'inline-block' }}
-                            /> 
-                        </pre>
+                        
+                        {
+                            isMdUp && 
+                            <pre>
+                                <TypeAnimation
+                                    sequence={[htmlText]} // HTML text sequence
+                                    wrapper="span"
+                                    cursor={false}
+                                    repeat={1}
+                                    speed={99}
+                                    style={{ fontSize: '15px', display: 'inline-block' }}
+                                /> 
+                            </pre>
+                        }
 
                         
                     </Grid>
 
-                    <Grid sx={{ display: "flex", justifyContent: "center", mt: 10, pr: 10}} size={{ xs: 6 }}  >
-                        <img src={`/images/${isDarkMode ? 'WebSearchDark' : 'WebSearch'}.png`} alt="app logo" height={550} />
+                    <Grid sx={{ display: 'flex', position: 'relative',  justifyContent: "center", mt: { xs: 2, md: 11}, pr: { md: 10 }}} size={{ xs: 12, md: 6 }}  >
+                        
+                        <img src={`/images/${isDarkMode ? 'WebSearchDark' : 'WebSearch'}.png`} alt="app logo" style={{ maxWidth: '90vw', objectFit: 'contain' }} width={550} />
+                        
+                        { 
+                            isMdDown &&
+                            <Typography variant="h3"  
+                                sx={{
+                                    position: 'absolute',
+                                    top: '58%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    fontWeight: 'bold',
+                                    fontSize: isSmDown ? '10vw' : '8vw',
+                                    color: 'white'
+                                }}
+                            >
+                                HTTP
+                            </Typography>
+                        }
+
                     </Grid>
 
                 </Grid>

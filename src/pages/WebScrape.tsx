@@ -1,4 +1,4 @@
-import {Box, Button,  Tooltip} from "@mui/material";
+import {Box, Button,  Tab,  Tabs,  Tooltip, useMediaQuery} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import WTTable from "../components/WebScrape/WTTable";
 import {useState} from "react";
@@ -6,13 +6,16 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
 import WTTextField from "../components/WTTextField";
-import {contentType} from "../components/models";
+import {ContentType} from "../components/models";
 import ButtonGroup from '@mui/material/ButtonGroup';
 import WTConfirmationDialog from "../components/layout/WTConfirmationDialog";
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 import {PageTransition} from "../components/Transitions";
 import WTTreeView from "../components/WebScrape/WTTreeView/WTTreeView";
 import {extractAllIds} from "../components/commonFunctions";
+import {TabPanel} from "../components/layout/TabPanel";
+import { useTheme } from '@mui/material/styles';
+import WTAlert from "../components/layout/WTAlert";
 
 interface ScrapedData {
     itemId: string;
@@ -474,7 +477,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
     });
   }
 
-  const clearTableContent = (itemIds: string[], contentType: contentType ) => {
+  const clearTableContent = (itemIds: string[], contentType: ContentType ) => {
 
     if(contentType === 'table') {
       setSelectedIds(new Set());
@@ -504,10 +507,20 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
     return value;
   };
   
+
+  const [showAlert, setShowAlert] = useState(false);
+
+  const onCloseAlert = () => {
+      setShowAlert(false);
+  }
+
   const downloadCSV = () => {
     const table = document.getElementById('WTTable');
 
-    if(!table) return;
+    if(!table || !selectedIds.size) {
+      setShowAlert(true);
+      return;
+    };
 
     const rows = table.querySelectorAll('tr');
 
@@ -524,8 +537,10 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
+    const domain = webUrl.match(/(?:https?:\/\/)?(?:www\.)?([^/]+)/);
+    const docName = `${domain && domain.length ? domain[1] : 'webtree'}_data.csv`;
     a.setAttribute('href', url);
-    a.setAttribute('download', 'mui_table_data.csv');
+    a.setAttribute('download', docName);
     a.click();
   };
 
@@ -554,12 +569,23 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
     });
   }
 
+  const theme = useTheme();
+  const isSmDown = useMediaQuery(theme.breakpoints.down('sm'));
+
+  //Tabs
+
+  const [value, setValue] = useState(0);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+
   return (
     <PageTransition transitionKey="WebScrape">
       <Box mb={2}>
-          <Grid container spacing={2} size={12} justifyContent="center">
+        
+          <Grid container spacing={2} size={12}  justifyContent="center">
 
-              <Grid size={{ xs: 9 }} >
+              <Grid size={{ xs: 11, md: 9 }} >
 
                   <Box className="flex">
 
@@ -578,62 +604,89 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
                       sx={{ ml: '10px' }}
                       onClick={exitScraping}
                     >
-                      <FastRewindIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
+                      <FastRewindIcon  htmlColor="#fff" sx={{ fontSize: 28 }}/>
                     </Button>
 
                   </Box>
                   
               </Grid>
 
-              <Grid size={{ xs: 4 }}>
+              {
+                isSmDown && 
+                <Grid size={{ xs: 11,  }} >
+              
+                    <Tabs
+                      value={value}
+                      onChange={handleChange}
+                      indicatorColor="secondary"
+                      textColor="inherit"
+                      variant="fullWidth"
+                      aria-label="full width tabs example"
+                    >
+                      <Tab label="HTML Tree"/>
+                      <Tab label="Selection table"/>
+                    </Tabs>
+                      
+                </Grid>
+              }
+
+              <Grid size={{ xs: 11, md: 4 }}>
                   
-                <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick} onAddOnSearch={onTreeAddOnSearch}/>
+                <TabPanel value={isSmDown ? value : 0} index={0}>
+                  <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick} onAddOnSearch={onTreeAddOnSearch}/>
+                </TabPanel>
                               
               </Grid>
 
-              <Grid container spacing={2}  sx={{ display: "flex", flexDirection: 'column',  justifyContent: "space-between" }} size={{ xs: 7 }}  >
+                <Grid container spacing={2}  sx={{ display: "flex", flexDirection: 'column',  justifyContent: "space-between" }} size={{ xs: 11, md: 7 }}  >
 
-                <Grid size={12} >
-                  <WTTable scrapedData={sampleSelectedData} selectedIds={selectedIds} onRemoveRow={removeSelectedItem} onClearContent={clearTableContent}  displaySelectorAttributes={includeSelectorAttributes}/>
+
+                  <Grid size={12} >
+                    <TabPanel value={isSmDown ? value : 1} index={1}>
+                      <WTTable scrapedData={sampleSelectedData} selectedIds={selectedIds} onRemoveRow={removeSelectedItem} onClearContent={clearTableContent}  displaySelectorAttributes={includeSelectorAttributes}/>
+                    </TabPanel>
+                  </Grid>
+
+                  <Grid size={12} sx={{ display: "flex", justifyContent: "end" }}>
+
+                    <TabPanel value={isSmDown ? value : 1} index={1}>
+                      <ButtonGroup variant="contained" color="primary" aria-label="contained primary button group">
+
+                        <Button
+                          sx={{ textTransform: 'none' }}
+                          onClick={downloadCSV}
+                        > 
+                          Download CSV &nbsp;
+                          <FileDownloadIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                        </Button>
+
+                        <Tooltip enterDelay={500} title="Include selector attributes when adding an element">
+                          <Button
+                            sx={{ textTransform: 'none' }}
+                            onClick={toggleSelectorAttributes}
+                          > 
+                            Selector attributes &nbsp;
+                            {includeSelectorAttributes ? 
+                                <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                              :
+                                <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                            }
+
+                          </Button>
+                        </Tooltip>
+
+                      </ButtonGroup>
+                    </TabPanel>
+
+                  </Grid>
+
                 </Grid>
-
-                <Grid size={12} sx={{ display: "flex", justifyContent: "end" }}>
-
-                  <ButtonGroup variant="contained" color="primary" aria-label="contained primary button group">
-
-                    <Button
-                      sx={{ textTransform: 'none' }}
-                      onClick={downloadCSV}
-                    > 
-                      Download CSV &nbsp;
-                      <FileDownloadIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
-                    </Button>
-
-                    <Tooltip enterDelay={500} title="Include selector attributes">
-                      <Button
-                        sx={{ textTransform: 'none' }}
-                        onClick={toggleSelectorAttributes}
-                      > 
-                        Selector attributes &nbsp;
-                        {includeSelectorAttributes ? 
-                            <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
-                          :
-                            <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
-                        }
-
-                      </Button>
-                    </Tooltip>
-
-                  </ButtonGroup>
-
-                </Grid>
-
-              </Grid>
 
           </Grid>
 
           <WTConfirmationDialog isOpen={showExitDialog} title="You're about to exit the current scraping session" caption="Any changes made will be lost" onClose={onWTDialogClose} />
-      </Box>
+          <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'error'} message={'No data to export'} />
+        </Box>	
     </PageTransition>
   );
 

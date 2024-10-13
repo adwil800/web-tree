@@ -30,7 +30,7 @@ export default function WTConfirmationDialog ({ isOpen, title, caption, onClose 
              }}
         >
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'white', justifyContent: 'center', minWidth: '400px', p: 2, borderRadius: 2, backgroundColor: 'secondary.main' }}  >
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'white', justifyContent: 'center', maxWidth: '90vw', p: 2, borderRadius: 2, backgroundColor: 'secondary.main' }}  >
                 
                 <DialogTitle>{title}</DialogTitle>
 

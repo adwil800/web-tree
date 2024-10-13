@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState} from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -7,18 +7,19 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import CodeOffIcon from '@mui/icons-material/CodeOff';
-import {contentType, ScrapedData} from '../models';
+import {ContentType, ScrapedData} from '../models';
 import {extractAttributes} from '../commonFunctions';
 import WTAlert from '../layout/WTAlert';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {Box, IconButton} from '@mui/material';
 import WTSplitButton from '../WTSplitButton';
+import {ItemTransition} from '../Transitions';
 
 interface WTTableProps {
     scrapedData: ScrapedData | null;
     selectedIds: Set<string>;
     displaySelectorAttributes: boolean;
-    onClearContent: (itemIds: string[], contentType: contentType) => void;
+    onClearContent: (itemIds: string[], contentType: ContentType) => void;
     onRemoveRow: (itemId: string) => void;
 }
 
@@ -51,6 +52,8 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
     const onCloseAlert = () => {
         setShowAlert(false);
     }
+
+    const rowsCType = useRef<Record<string, ContentType>>({});
 
     const genRows = (
         data: ScrapedData | null, 
@@ -104,7 +107,6 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                 return data.content.map((item) => genRows(item, `${currSelector} > `, contentNth, itemToFind)).flat();
 
             } 
-
             return;
         }
 
@@ -128,7 +130,7 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
 
             return (
                 <React.Fragment key={data.itemId}>
-                    <TableRow>
+                    <ItemTransition component='tr' delay={0} origin='left' >
                         <TableCell>{data.itemId}</TableCell>
                         
                         <TableCell component="th" scope="row">{data.tag}</TableCell>
@@ -137,18 +139,19 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                         <TableCell align="right">{ contentType }</TableCell>
                         <TableCell align="right">{ content() }</TableCell>
                         <TableCell align="center"> 
-                            <IconButton onClick={() => onRemoveRow(data.itemId)}>
+                            <IconButton onClick={() => removeRow(data.itemId)}>
                                 <RemoveCircleIcon htmlColor={'white'} />
                             </IconButton>
                         </TableCell>
-                    </TableRow>
+                    </ItemTransition>
                 </React.Fragment>
             );
         } 
 
         //When content is a string
         if (typeof data.content === 'string') {
-           return [genTableRow({}, attributes)];
+            rowsCType.current[data.itemId] = 'string';
+            return [genTableRow({}, attributes)];
         } 
 
         //When content is an array
@@ -165,77 +168,42 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                 contentNth[key] = { current: 1, amount: contentDict[key]};
             });
 
+            rowsCType.current[data.itemId] = 'tag';
             return [genTableRow(contentDict, attributes)];
             
         } 
+
+        //Append content type
+        rowsCType.current[data.itemId] = 'empty';
         
         //When there's no content
         return [genTableRow({}, selectorAttributes)]
 
     }
-
-    const handleClearContent = (contentType: contentType) => {
-        
-        if(!selectedIds.size || !scrapedData) return;
-
-        const itemIds: string[] = [];
-
-        if(contentType !== 'table') {
-
-            const filterByContentType = (data: ScrapedData | null) => {
-
-                if(!data) return;
-
-                if(data.itemId && selectedIds.has(data.itemId) ) {
-                    if(contentType === 'tag' && Array.isArray(data.content)) {
-                        itemIds.push(data.itemId);
-                    } else if(contentType === 'empty' && !data.content) {
-                        itemIds.push(data.itemId);
-                    } else if(contentType === 'string' && typeof data.content === 'string') {
-                        itemIds.push(data.itemId);
-                    }
-                }
-
-                data.content && Array.isArray(data.content) && data.content.map((item) => filterByContentType(item));
-                
-            }
-
-            filterByContentType(scrapedData);
-
-        }
-
-        // Clear foundRows
-        setFoundRows({});
-        onClearContent(itemIds, contentType);
-
-    }
     
 
     useEffect(() => {
+        setFoundRows(prevFoundRows => {
+            const foundElements: Record<string, React.ReactNode> = { ...prevFoundRows };
     
-        const foundElements: Record<string, React.ReactNode> = foundRows;
-
-        for (const itemId of selectedIds) {
-            // Verify if the item isn't already in the foundRows
-            if(foundElements[itemId]) {
-                console.log('skip', itemId);
-                continue;
-            };
-            console.log('looking for ', itemId);
-
-            const content = genRows(scrapedData, '', {}, {itemId, isFound: false});
-
-            if(content && content.length) {
-                const clearedContent = content.filter((item) => item !== undefined);
-
-                foundElements[itemId] = clearedContent;
+            for (const itemId of selectedIds) {
+                // Verify if the item isn't already in the foundRows
+                if (!foundElements[itemId]) {
+                    const content = genRows(scrapedData, '', {}, { itemId, isFound: false });
+                    if (content && content.length) {
+                        foundElements[itemId] = content.filter(item => item !== undefined);
+                    }
+                }
             }
-        }
+    
+            // Only return a new object if changes are made to avoid unnecessary renders
+            if (Object.keys(foundElements).length !== Object.keys(prevFoundRows).length) {
+                return foundElements;
+            }
+            return prevFoundRows;
+        });
 
-        console.log(foundElements)
-
-        setFoundRows(foundElements);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedIds]);
 
 
@@ -244,26 +212,64 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
     const renderTableRows = () => {
 
         const rows = [];
-        IM HERE RENDERING ROWs, THERES A DELAY WITH THE FIRST CLIck, 
-        ALSO HANDLE DELETING ROWS SINCE THE LOADER CHANGED
         for (const key in foundRows) {
             
             const rowContent = foundRows[key];
 
-                // Check if rowContent is an array before spreading
-                if (Array.isArray(rowContent)) {
-                    rows.push(...rowContent);
-                } else if (rowContent !== null && rowContent !== undefined) {
-                    // If it's a single ReactNode, add it directly
-                    rows.push(rowContent);
-                }
+            // Check if rowContent is an array before spreading
+            if (Array.isArray(rowContent)) {
+                rows.push(...rowContent);
+            } else if (rowContent !== null && rowContent !== undefined) {
+                // If it's a single ReactNode, add it directly
+                rows.push(rowContent);
+            }
+            
         }
 
-            console.log(rows)
-            return rows;
+        return rows;
 
     }
 
+    const handleClearContent = (contentType: ContentType) => {
+        
+        if(!selectedIds.size || !scrapedData) return;
+
+        const itemIdsToDelete: string[] = [];
+
+        if(contentType !== 'table') {
+
+            const foundRowsCopy = {...foundRows};
+
+            for (const itemId of selectedIds) {
+                if(rowsCType.current[itemId] === contentType) {
+                    itemIdsToDelete.push(itemId);
+                    delete foundRowsCopy[itemId];
+                } 
+            }
+
+            setFoundRows(foundRowsCopy); 
+            onClearContent(itemIdsToDelete, contentType);
+
+            return;
+        }
+
+        // Clear foundRows
+        setFoundRows({});
+        onClearContent(itemIdsToDelete, contentType);
+
+    }
+
+    const removeRow = (itemId: string) => {
+        
+        setFoundRows((prevRows) => {
+            const updatedRows = { ...prevRows };
+            delete updatedRows[itemId];
+            return updatedRows;
+        });
+
+        onRemoveRow(itemId);
+    }
+    
     return (
         <>
 
@@ -278,7 +284,7 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                 />
             </Box>
 
-            <TableContainer component={Paper}  sx={{ maxHeight: '65vh' }} >
+            <TableContainer component={Paper}  sx={{ maxHeight: '65vh', overflowX: { xs: 'auto', md: 'hidden' } }} >
                 <Table aria-label="WebScrape table" id="WTTable"  sx={{   backgroundColor: 'primary.main', ...cellTextSX, transition: 'background-color 0.2s ease' }}  stickyHeader  >
 
                     <TableHead>

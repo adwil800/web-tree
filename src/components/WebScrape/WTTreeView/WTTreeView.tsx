@@ -2,7 +2,7 @@ import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import IconButton from '@mui/material/IconButton';
 import { useState} from 'react';
-import {Box, Button, Tooltip, Typography} from '@mui/material';
+import {Box, Button, Tooltip, Typography, useMediaQuery} from '@mui/material';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CircleIcon from '@mui/icons-material/Circle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -14,6 +14,7 @@ import {extractIds, filterBySelector} from './functions';
 import {ScrapedData} from '../../models';
 import {extractAttributes} from '../../commonFunctions';
 import WTTextField from '../../WTTextField';
+import { useTheme } from '@mui/material/styles';
 
 interface WebScrapeProps {
     scrapedData: ScrapedData[];
@@ -26,6 +27,10 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
 
     const [expandedItems, setExpandedItems] = useState<string[]>(scrapedData && scrapedData.length ? [scrapedData[0].itemId] : []);
 
+
+    const theme = useTheme();
+    const isSmDown = useMediaQuery(theme.breakpoints.down('sm'));
+    
     const expandItem = (itemId: string) => {
 
         setExpandedItems((prevExpandedItems) =>
@@ -137,6 +142,11 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
                 setExpandedItems(pathIds);
                 setFilteredItemIds(itemIds);
                 setNoFilterResults(false);
+
+                if(addOnSearch) {
+                    onAddOnSearch(itemIds);
+                }
+                
             } else {
                 setNoFilterResults(true);
             }
@@ -209,9 +219,9 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
                         onClick={handleAddSearchedElements}
                     >
                         <Box sx={{ display: 'flex', pl: 2, pr: 2}}>
-                            <AccountTreeOutlinedIcon {...iconProps} fontSize={'large'} />
-                            <ArrowRightAltIcon {...iconProps} fontSize={'large'} />
-                            <BackupTableIcon {...iconProps} fontSize={'large'} />
+                            <AccountTreeOutlinedIcon {...iconProps} sx={{ fontSize: isSmDown ? 25 : 30 }} />
+                            <ArrowRightAltIcon {...iconProps} sx={{ fontSize: isSmDown ? 25 : 30 }} />
+                            <BackupTableIcon {...iconProps} sx={{ fontSize: isSmDown ? 25 : 30 }} />
                         </Box>
                     </Button>
                 </Tooltip>

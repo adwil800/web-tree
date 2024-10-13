@@ -11,11 +11,16 @@ interface WTAppBarProps {
 export default function WTAppBar({ toggleTheme, isDarkMode }: WTAppBarProps){
  
   return (
-    <Toolbar sx={{backgroundColor: 'primary.main', transition: 'background-color 0.2s ease' }}>
+    <Toolbar sx={{
+      backgroundColor: 'primary.main', transition: 'background-color 0.2s ease',
+      pl: { xs: 0, md: 2 }, pr: { xs: 1, md: 2 }
+    }}>
 
-      <Box sx={{ display: 'flex', mt: 1, flexGrow: 1, justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ 
+        display: 'flex', mt: 1, flexGrow: 1, justifyContent: 'space-between', alignItems: 'center',  
+      }}>
         
-        <img src={`/images/${isDarkMode ? 'AppNameDark' : 'AppName'}.svg`} alt="app logo" height={70} />
+        <img src={`/images/${isDarkMode ? 'AppNameDark' : 'AppName'}.svg`} alt="app logo" height={60} />
 
         <Tooltip title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'} enterDelay={500}>
           <IconButton onClick={toggleTheme}>

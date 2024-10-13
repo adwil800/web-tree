@@ -6,4 +6,4 @@ export interface ScrapedData {
     attributes?: { [key: string]: string };
 }
 
-export type contentType = 'table' | 'tag' | 'empty' | 'string';
+export type ContentType = 'table' | 'tag' | 'empty' | 'string';

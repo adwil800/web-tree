@@ -25,7 +25,7 @@ export default function WTAlert({ isOpen, message, type, CloseAlert }: WTAlertPr
     }, [CloseAlert]);
 
   return (
-    <Box sx={{ position: 'absolute', bottom: 5, right: 20,  }}>
+    <Box sx={{ position: 'absolute', top: 5, right: 20,  }}>
         
       <Collapse in={isOpen}>
         <Alert
