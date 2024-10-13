@@ -1,7 +1,7 @@
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import IconButton from '@mui/material/IconButton';
-import { useState} from 'react';
+import React, { useEffect, useMemo, useState} from 'react';
 import {Box, Button, Tooltip, Typography, useMediaQuery} from '@mui/material';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -21,9 +21,11 @@ interface WebScrapeProps {
     selectedIds: Set<string>;
     onClick: (itemId: string, selectionType: 'node' | 'tree') => void;
     onAddOnSearch: (itemIds: string[]) => void;
+    clearSelection: () => void;
 }
+
  
-export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnSearch}: WebScrapeProps) {
+export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnSearch, clearSelection}: WebScrapeProps) {
 
     const [expandedItems, setExpandedItems] = useState<string[]>(scrapedData && scrapedData.length ? [scrapedData[0].itemId] : []);
 
@@ -68,37 +70,6 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
         </div>
     )
 
-    const renderScrapedJson = (data: ScrapedData[]) => {
-        return data.map((item, index) => {
-
-            const attributes = extractAttributes(item.attributes || {});
-
-            //Filter by textContent
-            if (typeof item.content === 'string') {
-                return (
-                    <TreeItem key={index} itemId={item.itemId}  onClick={() => expandItem(item.itemId)}
-                        label={selectionButtons(item.itemId, item.tag + attributes.join(''))}  
-                        sx={{ backgroundColor: filteredItemIds.includes(item.itemId) ? 'secondary.main' : 'primary.main'}}
-                    >
-                        <TreeItem itemId={item.itemId + index} label={item.content} />
-                        
-                    </TreeItem>
-                );
-            }
-
-            return (
-                <TreeItem key={index} itemId={item.itemId} onClick={() => expandItem(item.itemId)}
-                    label={selectionButtons(item.itemId, item.tag + attributes.join(''))} 
-                    sx={{ backgroundColor: filteredItemIds.includes(item.itemId) ? 'secondary.main' : 'primary.main'}}
-                >
-                    { item.content && renderScrapedJson(item.content) }
-                </TreeItem>
-            );
-        }
-        );
-    }
-
-
     // Filter the tree
     const [querySelector, setQuerySelector] = useState('');
     const [filteredItemIds, setFilteredItemIds] = useState<string[]>([]);
@@ -125,7 +96,7 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
         body p.product: Finds all p tags with the class "laptop" that are children of the body tag
     */
     const searchElements = () => {
-        
+
         if(!querySelector) {
             setNoFilterResults(false);
             setFilteredItemIds([]);
@@ -163,7 +134,8 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
             setExpandedItems(pathIds);
             setFilteredItemIds(itemIds);
             setNoFilterResults(false);
-
+ 
+        
             if(addOnSearch) {
                 onAddOnSearch(itemIds);
             }
@@ -175,6 +147,48 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
        
     }
 
+    const renderScrapedJson = (data: ScrapedData[]) => {
+        return data.map((item, index) => {
+
+            const attributes = extractAttributes(item.attributes || {});
+
+            //Filter by textContent
+            if (typeof item.content === 'string') {
+                return (
+                    <TreeItem key={index} itemId={item.itemId}  onClick={() => expandItem(item.itemId)}
+                        label={selectionButtons(item.itemId, item.tag + attributes.join(''))}  
+                        sx={{ backgroundColor: filteredItemIds.includes(item.itemId) ? 'secondary.main' : 'primary.main'}}
+                    >
+                        <TreeItem itemId={item.itemId + index} label={item.content} />
+                        
+                    </TreeItem>
+                );
+            }
+
+            return (
+                <TreeItem key={index} itemId={item.itemId} onClick={() => expandItem(item.itemId)}
+                    label={selectionButtons(item.itemId, item.tag + attributes.join(''))} 
+                    sx={{ backgroundColor: filteredItemIds.includes(item.itemId) ? 'secondary.main' : 'primary.main'}}
+                >
+                    { item.content && renderScrapedJson(item.content) }
+                </TreeItem>
+            );
+        }
+        );
+    }
+
+    const renderedItems = useMemo(() => {
+        return renderScrapedJson(noFilterResults ? noResultsTemplate : scrapedData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scrapedData, filteredItemIds, expandedItems, noFilterResults, selectedIds]);
+
+    useEffect(() => {
+        setCachedResults(null);
+        clearSelection();
+        setFilteredItemIds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scrapedData]);
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === 'Enter') {
         searchElements();
@@ -185,7 +199,6 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
     const [addOnSearch, setAddOnSearch] = useState(false);
     const handleAddSearchedElements = () => {
         setAddOnSearch(!addOnSearch);
-        console.log('onclick')
     }
   
     const iconProps = {
@@ -205,7 +218,7 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
                         fullWidth
                         size="small"
                         onChange={handleTextFieldChange}
-                        onKeyDown={(e) => handleKeyDown(e)}
+                        onKeyDown={handleKeyDown}
                         id="querySelector"
                     />
                 </Tooltip>
@@ -248,7 +261,7 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
                 color={'white'} p={3} borderRadius={2} mt={1} maxHeight={'67vh'} overflow={'auto'}
             >
                 <SimpleTreeView expandedItems={expandedItems}  >
-                    { renderScrapedJson(noFilterResults ? noResultsTemplate : scrapedData) }
+                    { renderedItems }
                 </SimpleTreeView>
             </Box>
         </>

@@ -4,6 +4,7 @@ import WebScrape from './pages/WebScrape';
 import MainLayout from './layout/MainLayout';
 import {useEffect, useState} from 'react';
 import ThemeSwitcher from './components/layout/ThemeSwitcher';
+import WTAlert from './components/layout/WTAlert';
 
 
 function App() {
@@ -29,7 +30,22 @@ function App() {
   const [webUrl, setWebUrl] = useState<string>('');
   const [isScraping, setIsScraping] = useState<boolean>(false);
 
+  const [showAlert, setShowAlert] = useState(false);
+
+  const onCloseAlert = () => {
+      setShowAlert(false);
+  }
+  
   const handleWebUrl = (url: string) => {
+    // eslint-disable-next-line no-useless-escape
+    const urlRegex = /^\s*(http|https):\/\/[^\s"]+(\s[a-zA-Z0-9#_.\[\]=:"'(),-]+)?\s*$/;
+        
+    if (!urlRegex.test(url)) {
+
+        setShowAlert(true);
+        return;
+        
+    }
 
     // Validate the URL
     setWebUrl(url);
@@ -56,11 +72,14 @@ function App() {
 
       
           {isScraping ? (
-              <WebScrape webUrl={webUrl} backToSearch={backToSearch} />
+              <WebScrape webUrl={webUrl} onSearch={handleWebUrl} backToSearch={backToSearch} />
           ) : (
             
               <WebSearch onSearch={handleWebUrl} isDarkMode={isDarkMode}/>
           )}
+
+
+          <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'error'} message={'Please enter a valid URL'} position={'bottom'} />
 
 
       </MainLayout>

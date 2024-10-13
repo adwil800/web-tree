@@ -9,10 +9,11 @@ interface WTAlertProps {
     isOpen: boolean;
     message: string;
     type: 'success' | 'error';
+    position: 'top' | 'bottom';
     CloseAlert: () => void;
 }
 
-export default function WTAlert({ isOpen, message, type, CloseAlert }: WTAlertProps) {
+export default function WTAlert({ isOpen, message, type, position, CloseAlert }: WTAlertProps) {
 
     React.useEffect(() => {
         const alert = setTimeout(() => {
@@ -24,8 +25,16 @@ export default function WTAlert({ isOpen, message, type, CloseAlert }: WTAlertPr
         }
     }, [CloseAlert]);
 
+    const sx: Record<string, string | number> = { position: 'absolute', right: 20}; 
+
+    if(position === 'top') {
+        sx.top = 5;
+    } else {
+        sx.bottom = 5;
+    }
+
   return (
-    <Box sx={{ position: 'absolute', top: 5, right: 20,  }}>
+    <Box sx={sx}>
         
       <Collapse in={isOpen}>
         <Alert

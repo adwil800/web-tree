@@ -3,7 +3,6 @@ import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
 import WTTextField from "../components/WTTextField";
 import {useRef, useState} from "react";
-import WTAlert from "../components/layout/WTAlert";
 import {TypeAnimation} from "react-type-animation";
 import {PageTransition} from "../components/Transitions";
 
@@ -52,29 +51,22 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
 
 
     const beginScraping = () => {
-    
-        const urlRegex = /^(http|https):\/\/[^ "]+$/;
+        
+        // eslint-disable-next-line no-useless-escape
+        const urlRegex = /^\s*(http|https):\/\/[^\s"]+(\s[a-zA-Z0-9#_.\[\]=:"'(),-]+)?\s*$/;
+                
         if (!urlRegex.test(webUrl)) {
-
-            setShowAlert(true);
 
             if(searchBarRef.current) {
                 searchBarRef.current.focus();
             }
 
-            return;
-            
         }
     
-        onSearch(webUrl);
+        onSearch(webUrl.trim());
         
     }
 
-    const [showAlert, setShowAlert] = useState(false);
-
-    const onCloseAlert = () => {
-        setShowAlert(false);
-    }
 
     // Define breakpoints
     const theme = useTheme();
@@ -115,15 +107,16 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
                                 fullWidth
                                 onChange={handleTextFieldChange}
                                 inputRef={searchBarRef}
+                                helperText="To scrape from a given element, include a space and the element's selector, e.g. https://example.com tag.class#id"
                             />
                             
                             <Button
                                 variant="contained"
                                 color="primary"
-                                sx={{ ml: '10px' }}
+                                sx={{ ml: '10px', maxHeight: 55 }}
                                 onClick={beginScraping}
                             >
-                                <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
+                                <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30, }}/>
                             </Button>
                             
                         </Box>
@@ -137,7 +130,7 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
                                     cursor={false}
                                     repeat={1}
                                     speed={99}
-                                    style={{ fontSize: '15px', display: 'inline-block' }}
+                                    style={{ fontSize: '16px', display: 'inline-block' }}
                                 /> 
                             </pre>
                         }
@@ -147,7 +140,13 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
 
                     <Grid sx={{ display: 'flex', position: 'relative',  justifyContent: "center", mt: { xs: 2, md: 11}, pr: { md: 10 }}} size={{ xs: 12, md: 6 }}  >
                         
-                        <img src={`/images/${isDarkMode ? 'WebSearchDark' : 'WebSearch'}.png`} alt="app logo" style={{ maxWidth: '90vw', objectFit: 'contain' }} width={550} />
+                        <img src={`/images/${isDarkMode ? 'WebSearchDark' : 'WebSearch'}.png`} alt="app logo" 
+                        style={{ 
+                            maxWidth: '90vw', objectFit: 'contain',
+                            position: isMdDown ? 'relative' : 'absolute',
+                            top: isMdDown ? 0 : 100,
+                         }}
+                         width={550} />
                         
                         { 
                             isMdDown &&
@@ -158,11 +157,11 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
                                     left: '50%',
                                     transform: 'translate(-50%, -50%)',
                                     fontWeight: 'bold',
-                                    fontSize: isSmDown ? '10vw' : '8vw',
+                                    fontSize: isSmDown ? '9vw' : '6vw',
                                     color: 'white'
                                 }}
                             >
-                                HTTP
+                                HTTP/S
                             </Typography>
                         }
 
@@ -170,7 +169,6 @@ export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
 
                 </Grid>
 
-                <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'error'} message={'Please enter a valid URL'} />
             </Box>
         </PageTransition>
     );

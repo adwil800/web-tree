@@ -1,7 +1,7 @@
-import {Box, Button,  Tab,  Tabs,  Tooltip, useMediaQuery} from "@mui/material";
+import {Box, Button, Tab, Tabs, useMediaQuery} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import WTTable from "../components/WebScrape/WTTable";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
@@ -16,6 +16,8 @@ import {extractAllIds} from "../components/commonFunctions";
 import {TabPanel} from "../components/layout/TabPanel";
 import { useTheme } from '@mui/material/styles';
 import WTAlert from "../components/layout/WTAlert";
+import axios from 'axios';
+import ChangeCircleSharpIcon from '@mui/icons-material/ChangeCircleSharp';
 
 interface ScrapedData {
     itemId: string;
@@ -23,414 +25,40 @@ interface ScrapedData {
     content?: ScrapedData[] | string;
     attributes?: { [key: string]: string };
 }
-//TODO  Make sure that every key is set to lower case
-const sampleScrapedData: ScrapedData[] = 
-[
-    { 
-      "itemId": "0",
-      "tag": "html",
-      "content": [
-        {
-          "itemId": "1",
-          "tag": "head",
-          "content": [
-            {
-              "itemId": "2",
-              "tag": "meta",
-              "attributes": {
-                "name": "viewport",
-                "content": "width=device-width, initial-scale=1"
-              }
-            },
-            {
-              "itemId": "3",
-              "tag": "meta",
-              "attributes": {
-                "name": "Web tree",
-                "content": "A simple web scraper"
-              }
-            },
-            {
-              "itemId": "4",
-              "tag": "title",
-              "content": "Web Tree"
-            }
-          ]
-        },
-        {
-          "itemId": "5",
-          "tag": "body",
-          "content": [
-            {
-          "itemId": "6",
-          "tag": "section",
-          "attributes": {
-            "class": "section111" ,
-            "className": "sampleSection",
-            "id": "section1",
-          },
-              "content": [
-                {
-                  "itemId": "7",
-                  "tag": "ul",
-                  "attributes": {
-                    "id": "ProductList",
-                    "class": "products"
-                  },
-                  "content": [
-                    {
-                      "itemId": "8",
-                      "tag": "li",
-                      "attributes": {
-                        "class": "product listItem"
-                      },
-                      "content": [
-                        {
-                        "itemId": "9",
-                        "tag": "p",
-                          "attributes": {
-                            "class": "product-name"
-                          },
-                          "content": "Laptop"
-                        },
-                        {
-                        "itemId": "10",
-                        "tag": "p",
-                          "attributes": {
-                            "class": "product-price"
-                          },
-                          "content": "$3220"
-                        }
-                      ]
-                    },
-                    {
-                        "itemId": "11",
-                      "tag": "li",
-                      // "attributes": {
-                      //   "Class": "product listItem"
-                      // },
-                      "content": [
-                        {
-                        "itemId": "12",
-                        "tag": "p",
-                          "attributes": {
-                            "class": "product-name"
-                          },
-                          "content": "Laptop"
-                        },
-                        {
-                        "itemId": "13",
-                        "tag": "p",
-                          "attributes": {
-                            "class": "product-price"
-                          },
-                          "content": "$200"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "itemId": "117",
-                  "tag": "ul",
-                  "attributes": {
-                    "id": "AAAAAAAAAAAAAAAA",
-                  },
-                  "content": [
-                    {
-                      "itemId": "82",
-                      "tag": "li",
-                      "attributes": {
-                        "class": "Puroducto Liasto"
-                      },
-                      "content": [
-                        {
-                        "itemId": "29",
-                        "tag": "p",
-                        "attributes": {
-                          "class": "product-nomme"
-                        },
-                        "content": "laptop"
-                        }
-                      ]
-                    },
-                  ]
-                },
-                {
-                "itemId": "130",
-                "tag": "p",
-                  "content":   [
-                    {
-                      "itemId": "13021",
-                      "tag": "span",
-                      "content": "$200"
-                    },
-                    {
-                      "itemId": "1301",
-                      "tag": "span",
-                      "content": "laptop"
-                    },
-                    {
-                      "itemId": "13320121",
-                      "tag": "span",
-                        "content": [
-                          {
-                            "itemId": "14130211",
-                            "tag": "div",
-                            "content": "laptop"
-                          },
-                        ]
-                      }
-                  ]
-                }
-              ]
-            },
-            {
-              "itemId": "1171",
-              "tag": "ul",
-              "attributes": {
-                "id": "BBBBBBBBBBBBBBBBB",
-              },
-              "content": [
-                {
-                  "itemId": "812",
-                  "tag": "li",
-                  "attributes": {
-                    "class": "ITEMMMM"
-                  },
-                  "content": [
-                    {
-                    "itemId": "129",
-                    "tag": "p",
-                      "attributes": {
-                        "class": ""
-                      },
-                      "content": "SUPHA"
-                    },
-                    {
-                    "itemId": "1310",
-                    "tag": "p",
-                      "attributes": {
-                        "class": ""
-                      },
-                      "content": "$34000"
-                    }
-                  ]
-                },
-              ]
-            },
-          ]
-        }
-      ]
-    }
-];
-
-const sampleSelectedData: ScrapedData =  { 
-  "itemId": "0",
-  "tag": "html",
-  "content": [
-    {
-      "itemId": "1",
-      "tag": "head",
-      "content": [
-        {
-          "itemId": "2",
-          "tag": "meta",
-          "attributes": {
-            "name": "viewport",
-            "content": "width=device-width, initial-scale=1"
-          }
-        },
-        {
-          "itemId": "3",
-          "tag": "meta",
-          "attributes": {
-            "name": "Web tree",
-            "content": "A simple web scraper"
-          }
-        },
-        {
-          "itemId": "4",
-          "tag": "title",
-          "content": "Web Tree"
-        }
-      ]
-    },
-    {
-      "itemId": "5",
-      "tag": "body",
-      "content": [
-        {
-      "itemId": "6",
-      "tag": "section",
-      "attributes": {
-        "class": "section111" ,
-        "className": "sampleSection",
-        "id": "section1",
-      },
-          "content": [
-            {
-              "itemId": "7",
-              "tag": "ul",
-              "attributes": {
-                "id": "ProductList",
-                "class": "products"
-              },
-              "content": [
-                {
-                  "itemId": "8",
-                  "tag": "li",
-                  "attributes": {
-                    "class": "product listItem"
-                  },
-                  "content": [
-                    {
-                    "itemId": "9",
-                    "tag": "p",
-                      "attributes": {
-                        "class": "product-name"
-                      },
-                      "content": "Laptop"
-                    },
-                    {
-                    "itemId": "10",
-                    "tag": "p",
-                      "attributes": {
-                        "class": "product-price"
-                      },
-                      "content": "$3220"
-                    }
-                  ]
-                },
-                {
-                    "itemId": "11",
-                  "tag": "li",
-                  // "attributes": {
-                  //   "Class": "product listItem"
-                  // },
-                  "content": [
-                    {
-                    "itemId": "12",
-                    "tag": "p",
-                      "attributes": {
-                        "class": "product-name"
-                      },
-                      "content": "Laptop"
-                    },
-                    {
-                    "itemId": "13",
-                    "tag": "p",
-                      "attributes": {
-                        "class": "product-price"
-                      },
-                      "content": "$200"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "itemId": "117",
-              "tag": "ul",
-              "attributes": {
-                "id": "AAAAAAAAAAAAAAAA",
-              },
-              "content": [
-                {
-                  "itemId": "82",
-                  "tag": "li",
-                  "attributes": {
-                    "class": "Puroducto Liasto"
-                  },
-                  "content": [
-                    {
-                    "itemId": "29",
-                    "tag": "p",
-                    "attributes": {
-                      "class": "product-nomme"
-                    },
-                    "content": "laptop"
-                    }
-                  ]
-                },
-              ]
-            },
-            {
-            "itemId": "130",
-            "tag": "p",
-              "content":   [
-                {
-                  "itemId": "13021",
-                  "tag": "span",
-                  "content": "$200"
-                },
-                {
-                  "itemId": "1301",
-                  "tag": "span",
-                  "content": "laptop"
-                },
-                {
-                  "itemId": "13320121",
-                  "tag": "span",
-                    "content": [
-                      {
-                        "itemId": "14130211",
-                        "tag": "div",
-                        "content": "laptop"
-                      },
-                    ]
-                  }
-              ]
-            }
-          ]
-        },
-        {
-          "itemId": "1171",
-          "tag": "ul",
-          "attributes": {
-            "id": "BBBBBBBBBBBBBBBBB",
-          },
-          "content": [
-            {
-              "itemId": "812",
-              "tag": "li",
-              "attributes": {
-                "class": "ITEMMMM"
-              },
-              "content": [
-                {
-                "itemId": "129",
-                "tag": "p",
-                  "attributes": {
-                    "class": ""
-                  },
-                  "content": "SUPHA"
-                },
-                {
-                "itemId": "1310",
-                "tag": "p",
-                  "attributes": {
-                    "class": ""
-                  },
-                  "content": "$34000"
-                }
-              ]
-            },
-          ]
-        },
-      ]
-    }
-  ]
-}
 
 interface WebScrapeProps {
   webUrl: string;
+  onSearch: (url: string) => void;
   backToSearch: () => void;
 }
    
-export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
+export default function WebScrape ({ webUrl, onSearch, backToSearch, }: WebScrapeProps) {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const [scrapedData, setScrapedData] = useState<ScrapedData[]>([]);
+
+  const fetchScrapedData = async (url: string) => {
+      try { 
+          // Make a GET request to your local server
+          const response = await axios.post(`http://localhost:3001/api/scrape?`, { url });
+
+          if (response.data.success) {
+            setScrapedData([response.data.data.data]);
+          } else {
+            setScrapedData([{itemId: '-1', tag: 'No results'}]);
+          }
+
+      } catch (error) {
+          // console.log('Error fetching scraped data:', error);
+      }
+  }; 
+
+  useEffect(() => {
+    fetchScrapedData(webUrl);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [webUrl]);
+
  
   const handleTreeClick = (itemId: string, selectionType: 'node' | 'tree') => {
 
@@ -438,7 +66,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
 
     if(selectionType === 'tree') {
 
-      const currentItem = findCurrentItem(itemId, sampleScrapedData[0]);
+      const currentItem = findCurrentItem(itemId, scrapedData[0]);
         
       if(currentItem === null) return;
         itemsToAdd = new Set([...itemsToAdd, ...extractAllIds([currentItem])]);
@@ -478,7 +106,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
   }
 
   const clearTableContent = (itemIds: string[], contentType: ContentType ) => {
-
+    
     if(contentType === 'table') {
       setSelectedIds(new Set());
     } else {
@@ -491,10 +119,22 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
     
   }
 
-  const [includeSelectorAttributes, setIncludeSelectorAttributes] = useState(true);
+  const [rescanClearer, setRescanClearer] = useState(false);
 
-  const toggleSelectorAttributes = () => {
-      setIncludeSelectorAttributes(!includeSelectorAttributes);
+  const toggleRescanClearer = () => {
+    setRescanClearer(!rescanClearer);
+  }
+
+  const [displaySelector, setDisplaySelector] = useState(false);
+
+  const toggleDisplaySelector = () => {
+    setDisplaySelector(!displaySelector);
+  };
+
+  const [displayAttributes, setDisplayAttributes] = useState(false);
+
+  const toggleDisplayAttributes = () => {
+    setDisplayAttributes(!displayAttributes);
   };
 
   const escapeCSV = (value: string) => {
@@ -579,11 +219,27 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
     setValue(newValue);
   };
 
+  const [localUrl, setLocalUrl] = useState(webUrl);
+
+  const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalUrl(event.target.value);
+  }
+
+  const rescanWebsite = () => {
+    onSearch(localUrl);
+  }
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      rescanWebsite();
+    }
+  };
+
   return (
     <PageTransition transitionKey="WebScrape">
       <Box mb={2}>
         
-          <Grid container spacing={2} size={12}  justifyContent="center">
+          <Grid container spacing={2} size={12} justifyContent="center">
 
               <Grid size={{ xs: 11, md: 9 }} >
 
@@ -595,16 +251,28 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
                       autoComplete="off"
                       className="WT-text-field"
                       fullWidth
-                      value={webUrl}
+                      value={localUrl}
+                      onChange={handleTextFieldChange}
+                      onKeyDown={handleKeyDown}
+                      helperText="To scrape from a given element, include a space and the element's selector, e.g. https://example.com tag.class#id"
                     />
                       
                     <Button
                       variant="contained"
                       color="primary"
-                      sx={{ ml: '10px' }}
+                      sx={{ ml: '10px', maxHeight: 55 }}
                       onClick={exitScraping}
                     >
                       <FastRewindIcon  htmlColor="#fff" sx={{ fontSize: 28 }}/>
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{ ml: '10px', maxHeight: 55 }}
+                      onClick={rescanWebsite} 
+                    >
+                      <ChangeCircleSharpIcon  htmlColor="#fff" sx={{ fontSize: 28 }}/>
                     </Button>
 
                   </Box>
@@ -633,7 +301,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
               <Grid size={{ xs: 11, md: 4 }}>
                   
                 <TabPanel value={isSmDown ? value : 0} index={0}>
-                  <WTTreeView scrapedData={sampleScrapedData} selectedIds={selectedIds} onClick={handleTreeClick} onAddOnSearch={onTreeAddOnSearch}/>
+                  <WTTreeView scrapedData={scrapedData} selectedIds={selectedIds} onClick={handleTreeClick} onAddOnSearch={onTreeAddOnSearch} clearSelection={toggleRescanClearer}/>
                 </TabPanel>
                 
               </Grid>
@@ -643,7 +311,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
 
                   <Grid size={12} >
                     <TabPanel value={isSmDown ? value : 1} index={1}>
-                      <WTTable scrapedData={sampleSelectedData} selectedIds={selectedIds} onRemoveRow={removeSelectedItem} onClearContent={clearTableContent}  displaySelectorAttributes={includeSelectorAttributes}/>
+                      <WTTable scrapedData={scrapedData[0]} selectedIds={selectedIds} onRemoveRow={removeSelectedItem} onClearContent={clearTableContent}  displaySelector={displaySelector} displayAttributes={displayAttributes} rescanClearer={rescanClearer}/>
                     </TabPanel>
                   </Grid>
 
@@ -660,20 +328,32 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
                           <FileDownloadIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
                         </Button>
 
-                        <Tooltip enterDelay={500} title="Include selector attributes when adding an element">
                           <Button
                             sx={{ textTransform: 'none' }}
-                            onClick={toggleSelectorAttributes}
+                            onClick={toggleDisplayAttributes}
                           > 
-                            Selector attributes &nbsp;
-                            {includeSelectorAttributes ? 
+                            Include attributes &nbsp;
+                            {displayAttributes ? 
                                 <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
                               :
                                 <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
                             }
 
                           </Button>
-                        </Tooltip>
+                        
+
+                          <Button
+                            sx={{ textTransform: 'none' }}
+                            onClick={toggleDisplaySelector}
+                          > 
+                            Include CSS selector &nbsp;
+                            {displaySelector ? 
+                                <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                              :
+                                <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                            }
+
+                          </Button>
 
                       </ButtonGroup>
                     </TabPanel>
@@ -685,7 +365,7 @@ export default function WebScrape ({ webUrl, backToSearch }: WebScrapeProps) {
           </Grid>
 
           <WTConfirmationDialog isOpen={showExitDialog} title="You're about to exit the current scraping session" caption="Any changes made will be lost" onClose={onWTDialogClose} />
-          <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'error'} message={'No data to export'} />
+          <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'error'} message={'No data to export'} position={'top'} />
         </Box>	
     </PageTransition>
   );

@@ -26,7 +26,6 @@ export const extractAttributes = (attributes: TagAttributes, replaceSelectors = 
     //Replace key with their respective selector
     const includesKey = ['id', 'class',].includes(key.toLowerCase());
 
-
     const selector = includesKey && replaceSelectors ? key.replace('id', '#').replace(/class/gi, '.') : key + '="';
     const attributesValue = selector === '.' ? attributes[key].split(' ').join('.') : attributes[key];
 

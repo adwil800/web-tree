@@ -18,7 +18,9 @@ import {ItemTransition} from '../Transitions';
 interface WTTableProps {
     scrapedData: ScrapedData | null;
     selectedIds: Set<string>;
-    displaySelectorAttributes: boolean;
+    displaySelector: boolean;
+    displayAttributes: boolean;
+    rescanClearer: boolean;
     onClearContent: (itemIds: string[], contentType: ContentType) => void;
     onRemoveRow: (itemId: string) => void;
 }
@@ -39,7 +41,7 @@ const cellTextSX = {
 
 const headerSX = { backgroundColor: 'secondary.main', transition: 'background-color 0.2s ease' }
 
-export default function WTTable({ scrapedData, selectedIds, displaySelectorAttributes, onClearContent, onRemoveRow }: WTTableProps) {
+export default function WTTable({ scrapedData, selectedIds, displaySelector, displayAttributes, rescanClearer, onClearContent, onRemoveRow }: WTTableProps) {
 
     const [showAlert, setShowAlert] = useState(false);
 
@@ -71,11 +73,15 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
         let currSelector = selector + data.tag;
 
         //Handle selector attributes including nth-child
+        let attributes: string[] = [];
+        let selectorAttributes:string[] = [];
 
-        const attributes = extractAttributes(data.attributes || {}, false);
-        const selectorAttributes = extractAttributes(data.attributes || {});
+        if(displayAttributes) {
+            attributes = extractAttributes(data.attributes || {}, false);
+            selectorAttributes = extractAttributes(data.attributes || {});
+        }
 
-        if(displaySelectorAttributes) {
+        if(displaySelector) {
 
             currSelector += selectorAttributes.filter((attr) => attr.startsWith('#') || attr.startsWith('.')).join('');
 
@@ -134,8 +140,8 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                         <TableCell>{data.itemId}</TableCell>
                         
                         <TableCell component="th" scope="row">{data.tag}</TableCell>
-                        <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell>
-                        <TableCell align="right">{ itemAttributes } </TableCell>
+                        { displaySelector && <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell> }
+                        { displayAttributes && <TableCell align="right">{ itemAttributes }</TableCell> }
                         <TableCell align="right">{ contentType }</TableCell>
                         <TableCell align="right">{ content() }</TableCell>
                         <TableCell align="center"> 
@@ -259,6 +265,11 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
 
     }
 
+    useEffect(() => {
+        handleClearContent('table');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [displaySelector, displayAttributes, rescanClearer]);
+
     const removeRow = (itemId: string) => {
         
         setFoundRows((prevRows) => {
@@ -284,15 +295,16 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                 />
             </Box>
 
-            <TableContainer component={Paper}  sx={{ maxHeight: '65vh', overflowX: { xs: 'auto', md: 'hidden' } }} >
+            <TableContainer component={Paper}  sx={{ maxHeight: '65vh', }} >
                 <Table aria-label="WebScrape table" id="WTTable"  sx={{   backgroundColor: 'primary.main', ...cellTextSX, transition: 'background-color 0.2s ease' }}  stickyHeader  >
 
                     <TableHead>
                         <TableRow>
                             <TableCell sx={headerSX}>ItemId</TableCell>
                             <TableCell sx={headerSX}>Tag</TableCell>
-                            <TableCell sx={headerSX}>CSS Selector</TableCell>
-                            <TableCell sx={headerSX} align="right">Attributes</TableCell>
+                            
+                            { displaySelector && <TableCell sx={headerSX}>CSS Selector</TableCell> }
+                            { displayAttributes && <TableCell sx={headerSX} align="right">Attributes</TableCell> }
                             <TableCell sx={headerSX} align="right">Content Type</TableCell>
                             <TableCell sx={headerSX} align="right">Content</TableCell>
                             <TableCell sx={headerSX} align="right">Remove row</TableCell>
@@ -304,7 +316,7 @@ export default function WTTable({ scrapedData, selectedIds, displaySelectorAttri
                     </TableBody>
                 </Table>
             </TableContainer>
-            <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'success'} message={'Copied to clipboard'} />
+            <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'success'} message={'Copied to clipboard'} position={'top'} />
 
         </>
     );
