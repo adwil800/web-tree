@@ -1,0 +1,71 @@
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+ 
+
+.max-site-width {
+  max-width: 2560px !important;
+}
+
+.margin-auto {
+  margin: auto;
+}
+
+
+.mr-4 {
+  margin-right: 16px;
+}
+
+.z-10 {
+  z-index: 10;
+}
+ 
+
+.dark-bg {
+  background-color: #0C0D0F;
+}
+
+.light-bg {
+  background-color: #fff;
+}
+
+    
+.transition-bg {
+  transition: background-color ease 0.2s;
+}
+
+
+.MuiTooltip-popper * {
+  font-size: 13px !important;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+pre {
+  white-space: pre-wrap;      /* Allows wrapping of the content */
+  word-wrap: break-word;      /* Ensures long words or URLs break if needed */
+  overflow-wrap: break-word;  /* Adds support for more browsers */
+}
