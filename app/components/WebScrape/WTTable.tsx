@@ -11,16 +11,17 @@ import {ContentType, ScrapedData} from '../models';
 import {extractAttributes} from '../commonFunctions';
 import WTAlert from '../layout/WTAlert';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import {Box, IconButton} from '@mui/material';
+import {Box, Button, IconButton} from '@mui/material';
 import WTSplitButton from '../WTSplitButton';
 import {ItemTransition} from '../Transitions';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import FileDownloadIcon from '@mui/icons-material/FileDownload'; 
+import ButtonGroup from '@mui/material/ButtonGroup';
 
 interface WTTableProps {
     scrapedData: ScrapedData | null;
     selectedIds: Set<string>;
-    displaySelector: boolean;
-    displayAttributes: boolean;
-    rescanClearer: boolean;
     onClearContent: (itemIds: string[], contentType: ContentType) => void;
     onRemoveRow: (itemId: string) => void;
 }
@@ -39,9 +40,9 @@ const cellTextSX = {
     }
 }
 
-const headerSX = { backgroundColor: 'secondary.main', transition: 'background-color 0.2s ease' }
+const headerSX = { backgroundColor: 'secondary.main', transition: 'background-color 0.2s ease', }
 
-export default function WTTable({ scrapedData, selectedIds, displaySelector, displayAttributes, rescanClearer, onClearContent, onRemoveRow }: WTTableProps) {
+export default function WTTable({ scrapedData, selectedIds, onClearContent, onRemoveRow }: WTTableProps) {
 
     const [showAlert, setShowAlert] = useState(false);
 
@@ -141,9 +142,10 @@ export default function WTTable({ scrapedData, selectedIds, displaySelector, dis
                         
                         <TableCell component="th" scope="row">{data.tag}</TableCell>
                         { displaySelector && <TableCell sx={tableCellHoverSX} onClick={() => copyToClipboard(currSelector)}>{currSelector}</TableCell> }
-                        { displayAttributes && <TableCell align="right">{ itemAttributes }</TableCell> }
-                        <TableCell align="right">{ contentType }</TableCell>
-                        <TableCell align="right">{ content() }</TableCell>
+                        { displayAttributes && <TableCell>{ itemAttributes }</TableCell> }
+                        <TableCell>{ contentType }</TableCell>
+                        <TableCell >{ content() }</TableCell>
+                        {/* sx={{ maxWidth: 1000 }} */}
                         <TableCell align="center"> 
                             <IconButton onClick={() => removeRow(data.itemId)}>
                                 <RemoveCircleIcon htmlColor={'white'} />
@@ -265,11 +267,6 @@ export default function WTTable({ scrapedData, selectedIds, displaySelector, dis
 
     }
 
-    useEffect(() => {
-        handleClearContent('table');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [displaySelector, displayAttributes, rescanClearer]);
-
     const removeRow = (itemId: string) => {
         
         setFoundRows((prevRows) => {
@@ -280,7 +277,76 @@ export default function WTTable({ scrapedData, selectedIds, displaySelector, dis
 
         onRemoveRow(itemId);
     }
-    
+
+
+
+
+
+
+
+
+
+
+    // unchecked ************************************************************************************************
+
+
+    const [displaySelector, setDisplaySelector] = useState(false);
+
+    const toggleDisplaySelector = () => {
+      setDisplaySelector(!displaySelector);
+    };
+  
+    const [displayAttributes, setDisplayAttributes] = useState(false);
+  
+    const toggleDisplayAttributes = () => {
+      setDisplayAttributes(!displayAttributes);
+    };
+  
+    const escapeCSV = (value: string) => {
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        // Escape double quotes by replacing each " with ""
+        value = value.replace(/"/g, '""');
+        // Enclose the field in double quotes
+        return `"${value}"`;
+      }
+      return value;
+    };
+
+    const downloadCSV = () => {
+        const table = document.getElementById('WTTable');
+
+        if(!table || !selectedIds.size) {
+        setShowAlert(true);
+        return;
+        };
+
+        const rows = table.querySelectorAll('tr');
+
+        let csvContent = '';
+        rows.forEach((row) => {
+        const cols = row.querySelectorAll('td, th');
+        const rowData = Array.from(cols)
+            .map(col => escapeCSV(col.textContent || ''))
+            .join(',');
+        csvContent += rowData + '\n';
+        });
+
+        // Create a blob for the CSV content
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const domain = 'abc' //localUrl.match(/(?:https?:\/\/)?(?:www\.)?([^/]+)/);
+        const docName = `${domain && domain.length ? domain[1] : 'webtree'}_data.csv`;
+        a.setAttribute('href', url);
+        a.setAttribute('download', docName);
+        a.click();
+    };
+
+    useEffect(() => {
+        handleClearContent('table');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [displaySelector, displayAttributes]);
+
     return (
         <>
 
@@ -304,10 +370,10 @@ export default function WTTable({ scrapedData, selectedIds, displaySelector, dis
                             <TableCell sx={headerSX}>Tag</TableCell>
                             
                             { displaySelector && <TableCell sx={headerSX}>CSS Selector</TableCell> }
-                            { displayAttributes && <TableCell sx={headerSX} align="right">Attributes</TableCell> }
-                            <TableCell sx={headerSX} align="right">Content Type</TableCell>
-                            <TableCell sx={headerSX} align="right">Content</TableCell>
-                            <TableCell sx={headerSX} align="right">Remove row</TableCell>
+                            { displayAttributes && <TableCell sx={headerSX}>Attributes</TableCell> }
+                            <TableCell sx={headerSX}>Content Type</TableCell>
+                            <TableCell sx={headerSX}>Content</TableCell>
+                            <TableCell sx={headerSX}>Remove row</TableCell>
                         </TableRow>
                     </TableHead>
 
@@ -317,6 +383,46 @@ export default function WTTable({ scrapedData, selectedIds, displaySelector, dis
                 </Table>
             </TableContainer>
             <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'success'} message={'Copied to clipboard'} position={'top'} />
+
+
+            <ButtonGroup sx={{ mt: 1 }} variant="contained" color="primary" aria-label="contained primary button group">
+
+                <Button
+                    sx={{ textTransform: 'none' }}
+                    onClick={downloadCSV}
+                > 
+                    Download CSV &nbsp;
+                    <FileDownloadIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                </Button>
+
+                <Button
+                    sx={{ textTransform: 'none' }}
+                    onClick={toggleDisplayAttributes}
+                    > 
+                    Include attributes &nbsp;
+                    {displayAttributes ? 
+                        <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                        :
+                        <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                    }
+
+                </Button>
+                
+
+                <Button
+                    sx={{ textTransform: 'none' }}
+                    onClick={toggleDisplaySelector}
+                > 
+                    Include CSS selector &nbsp;
+                    {displaySelector ? 
+                        <CheckBoxIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                        :
+                        <CheckBoxOutlineBlankIcon  htmlColor="#fff" sx={{ fontSize: 20 }}/>
+                    }
+
+                </Button>
+
+            </ButtonGroup>
 
         </>
     );

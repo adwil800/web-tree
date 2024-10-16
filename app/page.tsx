@@ -3,14 +3,14 @@ import Image from "next/image";
 import {Box, Button, Typography, useMediaQuery} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SearchIcon from '@mui/icons-material/Search';
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {TypeAnimation} from "react-type-animation";
 
 import { useTheme } from '@mui/material/styles';
 import {useWTTheme} from "./components/layout/theme/ThemeContext";
 import WTTextField from "./components/WTTextField";
 import {PageTransition} from "./components/Transitions";
-import axios from "axios";
+import {useRouter} from "next/navigation";
 
 const htmlText = `
     <html> 
@@ -39,10 +39,11 @@ const htmlText = `
 `;
 
 interface WebSearchProps {
-    onSearch: (url: string) => void;
 }
 
-export default function WebSearch ({ onSearch }: WebSearchProps) {
+export default function WebSearch ({  }: WebSearchProps) {
+
+    const router = useRouter();
 
     const { isDarkMode } = useWTTheme();
 
@@ -66,8 +67,10 @@ export default function WebSearch ({ onSearch }: WebSearchProps) {
 
         }
         
-        if(onSearch)
-            onSearch(webUrl.trim());
+        const params = new URLSearchParams()
+        params.set('target', webUrl); 
+        
+        router.push(`/scrape/?${params.toString()}`);
         
     }
 
@@ -76,14 +79,7 @@ export default function WebSearch ({ onSearch }: WebSearchProps) {
     const isSmDown = useMediaQuery(theme.breakpoints.down('sm'));
     const isMdDown = useMediaQuery(theme.breakpoints.down('md'));
     const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
-    //TODO IM ALSO HERE INTEGRATE EXPRESS API
-    const testApi = async () => {
-      const response = await axios.post(`http://localhost:3000/api/scrape?`, { url: 'https://example.com' });
-      console.log(response)
-    }
-    useEffect(() => {
-      testApi();
-    } ,[]);
+
 
     return (
         <PageTransition transitionKey="WebSearch">

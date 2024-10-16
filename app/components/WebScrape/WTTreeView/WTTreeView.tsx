@@ -2,36 +2,27 @@ import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import IconButton from '@mui/material/IconButton';
 import React, { useEffect, useMemo, useState} from 'react';
-import {Box, Button, Tooltip, Typography, useMediaQuery} from '@mui/material';
+import {Box, Tooltip} from '@mui/material';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import CircleIcon from '@mui/icons-material/Circle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
-import SearchIcon from '@mui/icons-material/Search';
-import BackupTableIcon from '@mui/icons-material/BackupTable';
 import {extractIds, filterBySelector} from './functions';
 import {ScrapedData} from '../../models';
 import {extractAttributes} from '../../commonFunctions';
-import WTTextField from '../../WTTextField';
-import { useTheme } from '@mui/material/styles';
+import TreeSearch from './components/TreeSearch';
 
 interface WebScrapeProps {
     scrapedData: ScrapedData[];
     selectedIds: Set<string>;
     onClick: (itemId: string, selectionType: 'node' | 'tree') => void;
     onAddOnSearch: (itemIds: string[]) => void;
-    clearSelection: () => void;
 }
 
  
-export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnSearch, clearSelection}: WebScrapeProps) {
+export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnSearch}: WebScrapeProps) {
 
     const [expandedItems, setExpandedItems] = useState<string[]>(scrapedData && scrapedData.length ? [scrapedData[0].itemId] : []);
 
-
-    const theme = useTheme();
-    const isSmDown = useMediaQuery(theme.breakpoints.down('sm'));
     
     const expandItem = (itemId: string) => {
 
@@ -71,14 +62,9 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
     )
 
     // Filter the tree
-    const [querySelector, setQuerySelector] = useState('');
     const [filteredItemIds, setFilteredItemIds] = useState<string[]>([]);
     const [noFilterResults, setNoFilterResults] = useState<boolean>(false);
     const noResultsTemplate =  [{ tag: 'No results', itemId: '-1', }];
-
-    const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setQuerySelector(event.target.value);
-    }
 
     const [cachedResults, setCachedResults] = useState<{ querySelector: string, filteredResults: { path: string[], itemId: string }[] } | null>(null);
 
@@ -95,7 +81,7 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
         body #section.section1: Finds the children of the body tag with the id "section" and class "section1"
         body p.product: Finds all p tags with the class "laptop" that are children of the body tag
     */
-    const searchElements = () => {
+    const searchElements = (querySelector: string, addOnSearch = false) => {
 
         if(!querySelector) {
             setNoFilterResults(false);
@@ -184,75 +170,16 @@ export default function WTTreeView ({scrapedData, selectedIds, onClick, onAddOnS
 
     useEffect(() => {
         setCachedResults(null);
-        clearSelection();
         setFilteredItemIds([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [scrapedData]);
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === 'Enter') {
-        searchElements();
-      }
-    };
-
-
-    const [addOnSearch, setAddOnSearch] = useState(false);
-    const handleAddSearchedElements = () => {
-        setAddOnSearch(!addOnSearch);
-    }
-  
-    const iconProps = {
-        htmlColor: addOnSearch ? 'white' : 'info'
-    };
 
     return (
         
         <>
-            <Box className="flex">
-                <Tooltip title={`Example query: body p "laptop"`} enterDelay={1000} PopperProps={{placement:'top'}}>
-                    <WTTextField
-                        label="Search elements"
-                        variant="outlined"
-                        autoComplete="off"
-                        className="WT-text-field"
-                        fullWidth
-                        size="small"
-                        onChange={handleTextFieldChange}
-                        onKeyDown={handleKeyDown}
-                        id="querySelector"
-                    />
-                </Tooltip>
-                    
-                <Tooltip title={"Select items on search"} sx={{fontSize: 14}} PopperProps={{placement:'top'}}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ ml: '10px', height: '40px'}}
-                        size="small"
-                        onClick={handleAddSearchedElements}
-                    >
-                        <Box sx={{ display: 'flex', pl: 2, pr: 2}}>
-                            <AccountTreeOutlinedIcon {...iconProps} sx={{ fontSize: isSmDown ? 25 : 30 }} />
-                            <ArrowRightAltIcon {...iconProps} sx={{ fontSize: isSmDown ? 25 : 30 }} />
-                            <BackupTableIcon {...iconProps} sx={{ fontSize: isSmDown ? 25 : 30 }} />
-                        </Box>
-                    </Button>
-                </Tooltip>
 
-                <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ ml: '10px', height: '40px'}}
-                    size="small"
-                    onClick={searchElements}
-                >
-                    <SearchIcon  htmlColor="#fff" sx={{ fontSize: 30 }}/>
-                </Button> 
-            </Box>
-
-            <Typography fontSize={13} mt={0.2} ml={0.3}>
-                Use css selectors to search elements. Ex: #id, .class, tag and  "string content"
-            </Typography>
+            <TreeSearch searchElements={searchElements} />            
                 
             <Box 
                 sx={{ 
