@@ -1,14 +1,10 @@
 import { Toolbar, Box, IconButton, Tooltip } from '@mui/material';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import {useWTTheme} from '../context/ThemeContext';
  
-
-interface WTAppBarProps {
-  toggleTheme: () => void,
-  isDarkMode: boolean
-}
-
-export default function WTAppBar({ toggleTheme, isDarkMode }: WTAppBarProps){
+export default function WTAppBar(){
+  const { isDarkMode, toggleTheme } = useWTTheme();
  
   return (
     <Toolbar sx={{

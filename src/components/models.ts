@@ -7,3 +7,7 @@ export interface ScrapedData {
 }
 
 export type ContentType = 'table' | 'tag' | 'empty' | 'string';
+
+export interface ComponentChildren {
+    children: React.ReactNode;
+}

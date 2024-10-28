@@ -14,10 +14,10 @@ import {PageTransition} from "../components/Transitions";
 import WTTreeView from "../components/WebScrape/WTTreeView/WTTreeView";
 import {extractAllIds} from "../components/commonFunctions";
 import {TabPanel} from "../components/layout/TabPanel";
-import { useTheme } from '@mui/material/styles';
-import WTAlert from "../components/layout/WTAlert";
+import { useTheme } from '@mui/material/styles'; 
 import axios from 'axios';
 import ChangeCircleSharpIcon from '@mui/icons-material/ChangeCircleSharp';
+import {useWTAlert} from "../components/context/AlertContext";
 
 interface ScrapedData {
     itemId: string;
@@ -33,6 +33,8 @@ interface WebScrapeProps {
 }
    
 export default function WebScrape ({ webUrl, onSearch, backToSearch, }: WebScrapeProps) {
+
+  const { CWTAlert } = useWTAlert();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -147,18 +149,13 @@ export default function WebScrape ({ webUrl, onSearch, backToSearch, }: WebScrap
     return value;
   };
   
-
-  const [showAlert, setShowAlert] = useState(false);
-
-  const onCloseAlert = () => {
-      setShowAlert(false);
-  }
-
+ 
   const downloadCSV = () => {
     const table = document.getElementById('WTTable');
 
     if(!table || !selectedIds.size) {
-      setShowAlert(true);
+      CWTAlert('No data to export');
+      
       return;
     };
 
@@ -365,7 +362,7 @@ export default function WebScrape ({ webUrl, onSearch, backToSearch, }: WebScrap
           </Grid>
 
           <WTConfirmationDialog isOpen={showExitDialog} title="You're about to exit the current scraping session" caption="Any changes made will be lost" onClose={onWTDialogClose} />
-          <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'error'} message={'No data to export'} position={'top'} />
+         
         </Box>	
     </PageTransition>
   );

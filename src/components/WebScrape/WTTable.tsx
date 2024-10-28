@@ -9,11 +9,11 @@ import Paper from '@mui/material/Paper';
 import CodeOffIcon from '@mui/icons-material/CodeOff';
 import {ContentType, ScrapedData} from '../models';
 import {extractAttributes} from '../commonFunctions';
-import WTAlert from '../layout/WTAlert';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {Box, IconButton} from '@mui/material';
 import WTSplitButton from '../WTSplitButton';
 import {ItemTransition} from '../Transitions';
+import {useWTAlert} from '../context/AlertContext';
 
 interface WTTableProps {
     scrapedData: ScrapedData | null;
@@ -43,16 +43,11 @@ const headerSX = { backgroundColor: 'secondary.main', transition: 'background-co
 
 export default function WTTable({ scrapedData, selectedIds, displaySelector, displayAttributes, rescanClearer, onClearContent, onRemoveRow }: WTTableProps) {
 
-    const [showAlert, setShowAlert] = useState(false);
-
+    const { CWTAlert } = useWTAlert();
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(`document.querySelector('${text}')`);
-        setShowAlert(true);
-    }
-
-    const onCloseAlert = () => {
-        setShowAlert(false);
+        CWTAlert('Copied to clipboard');
     }
 
     const rowsCType = useRef<Record<string, ContentType>>({});
@@ -316,7 +311,6 @@ export default function WTTable({ scrapedData, selectedIds, displaySelector, dis
                     </TableBody>
                 </Table>
             </TableContainer>
-            <WTAlert CloseAlert={onCloseAlert} isOpen={showAlert} type={'success'} message={'Copied to clipboard'} position={'top'} />
 
         </>
     );

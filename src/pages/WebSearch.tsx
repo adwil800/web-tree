@@ -7,6 +7,7 @@ import {TypeAnimation} from "react-type-animation";
 import {PageTransition} from "../components/Transitions";
 
 import { useTheme } from '@mui/material/styles';
+import {useWTTheme} from "../components/context/ThemeContext";
 
 const htmlText = `
     <html> 
@@ -36,11 +37,11 @@ const htmlText = `
 
 interface WebSearchProps {
     onSearch: (url: string) => void;
-    isDarkMode: boolean;
 }
 
-export default function WebSearch ({ onSearch, isDarkMode }: WebSearchProps) {
+export default function WebSearch ({ onSearch }: WebSearchProps) {
 
+  const { isDarkMode } = useWTTheme();
     
     const [webUrl, setWebUrl] = useState('');
     const searchBarRef = useRef<HTMLElement>(null);
