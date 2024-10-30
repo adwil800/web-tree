@@ -8,6 +8,7 @@ import {PageTransition} from "../components/Transitions";
 
 import { useTheme } from '@mui/material/styles';
 import {useWTTheme} from "../components/context/ThemeContext";
+import {AppLogo} from "../components/icons/icons";
 
 const htmlText = `
     <html> 
@@ -141,13 +142,7 @@ export default function WebSearch ({ onSearch }: WebSearchProps) {
 
                     <Grid sx={{ display: 'flex', position: 'relative',  justifyContent: "center", mt: { xs: 2, md: 11}, pr: { md: 10 }}} size={{ xs: 12, md: 6 }}  >
                         
-                        <img src={`/images/${isDarkMode ? 'WebSearchDark' : 'WebSearch'}.png`} alt="app logo" 
-                        style={{ 
-                            maxWidth: '90vw', objectFit: 'contain',
-                            position: isMdDown ? 'relative' : 'absolute',
-                            top: isMdDown ? 0 : 100,
-                         }}
-                         width={550} />
+                        <AppLogo theme={isDarkMode ? 'dark' : 'light'} width={550} height={750}/>
                         
                         { 
                             isMdDown &&

@@ -18,7 +18,6 @@ function App() {
     const urlRegex = /^\s*(http|https):\/\/[^\s"]+(\s[a-zA-Z0-9#_.\[\]=:"'(),-]+)?\s*$/;
         
     if (!urlRegex.test(url)) {
-      console.log('okwad')
       CWTAlert('Please enter a valid URL');
       return;
         

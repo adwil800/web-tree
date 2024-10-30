@@ -2,6 +2,7 @@ import { Toolbar, Box, IconButton, Tooltip } from '@mui/material';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import {useWTTheme} from '../context/ThemeContext';
+import {AppNameImage} from '../icons/icons';
  
 export default function WTAppBar(){
   const { isDarkMode, toggleTheme } = useWTTheme();
@@ -16,7 +17,7 @@ export default function WTAppBar(){
         display: 'flex', mt: 1, flexGrow: 1, justifyContent: 'space-between', alignItems: 'center',  
       }}>
         
-        <img src={`/images/${isDarkMode ? 'AppNameDark' : 'AppName'}.svg`} alt="app logo" height={60} />
+        <AppNameImage color={isDarkMode ? '#2D8E00' : 'white'} />
 
         <Tooltip title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'} enterDelay={500}>
           <IconButton onClick={toggleTheme}>
